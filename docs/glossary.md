@@ -1,198 +1,174 @@
 # Opal Oracle Glossary
 
-This glossary is the shared vocabulary for Opal. It gives the project overview
-and names the terms used throughout the protocol docs. Detailed mechanics live
-in [architecture.md](architecture.md), [resolution.md](resolution.md), and
-[tokenomics.md](tokenomics.md).
+This glossary is the shared vocabulary for Opal. It gives the project overview and names the terms used throughout the protocol docs. Detailed mechanics live in [architecture.md](architecture.md), [resolution.md](resolution.md), and [tokenomics.md](tokenomics.md).
 
 ## Core Protocol
 
 **Opal**
-A Solana-native optimistic oracle for verifying real-world assertions written as
-natural language statements. Assertions are considered true by default unless an
-economically incentivized disputer challenges them, so the protocol design does
-not require an external monitoring or bot layer.
+A Solana-native optimistic oracle for verifying real-world statements. Statements are considered true by default unless an economically incentivized disputer challenges them, so the protocol design does not require an external monitoring or bot layer.
 
 **Assertion** - `AssertionAccount`
-The core unit of the protocol: a natural-language statement posted onchain by an
-asserter with a USDC bond attached.
+The onchain object created when an asserter posts a natural-language statement with a PUSD bond attached.
 
 **Statement** - `statement: String`
-The short, human-readable statement stored directly on the assertion account.
+The short, human-readable text being asserted. A statement is the sentence whose truth the protocol is asked to resolve.
 
 **Auxiliary Data** - `auxiliary_hash: String`
-The offchain criteria bundle used to resolve the assertion. It should define the
-source priority, event deadline, evidence rules, and ambiguity policy. The
-content is stored on IPFS or Arweave, with its content hash stored onchain.
+Offchain plain text supplied by the asserter to help resolve the statement. It is stored outside the assertion account, and the assertion stores only its content hash. The protocol does not enforce a schema for this text, but it should ideally include source priority, evidence links, and ambiguity handling. Weak auxiliary data increases the chance of `Unresolvable`.
 
-**Optimistic Truth**
-The default assumption that an assertion is true while it is in the liveness
-window. Optimistic truth is not final truth: consumers should treat it as
-tentative until the assertion reaches `Resolved`.
+**Proposed LLM Resolution** - `LLMResolutionRound.outcome`
+The non-final result posted by the LLM resolver after the first dispute. It opens the LLM challenge window and becomes final only if no second dispute is filed.
 
-**Final Truth**
-The terminal protocol output written only after an assertion reaches `Resolved`
-and has a concrete `ResolutionOutcome`.
+**Final Resolution** - `outcome: Option<ResolutionOutcome>`
+The terminal result on the assertion. It is `None` until `state == Resolved`.
 
 ## States And Outcomes
 
 **Assertion State** - `AssertionState`
 The lifecycle stage of an assertion.
 
-- `Asserted` - submitted, optimistically true, liveness window open, challengeable, non-terminal, and `outcome = None`.
-- `PendingLLM` - first dispute filed; the v1 LLM resolver is producing or has produced an initial verdict.
-- `AssertedLLM` - LLM verdict has been declared, and same conditions as `Asserted`.
-- `PendingVote` - the LLM result was challenged. 
-- `Voting` - OPAL-weighted private voting is active or awaiting settlement.
+- `Asserted` - initial liveness state; the statement is optimistically treated as `True`, first dispute is allowed, and `outcome = None`.
+- `PendingLLM` - first dispute has been filed and the protocol is waiting for the Switchboard-backed LLM result.
+- `AssertedLLM` - the LLM result has been posted on `LLMResolutionRound`, and the LLM challenge window is open.
+- `PendingVote` - the LLM result has been challenged and the vote resolution round is being initialized.
+- `Voting` - OPAL-weighted private voting is active or settling through MagicBlock.
 - `Resolved` - terminal state; `outcome` is set and integrators can safely settle irreversible positions.
 
 **Resolution Outcome** - `ResolutionOutcome`
-The terminal verdict on a resolved assertion.
+The possible answer values used by LLM and vote resolution rounds, and by the final assertion outcome.
 
-- `True` - the criteria confirm the statement.
-- `False` - the criteria contradict the statement.
-- `TooEarly` - the required ground truth does not exist yet or has not been published by the source deadline.
-- `Unresolvable` - the criteria or evidence are insufficient, contradictory, genuinely ambiguous, or voting fails to reach the required supermajority.
+- `True` - the statement is verified as correct.
+- `False` - the statement is verified as incorrect.
+- `TooEarly` - the statement cannot be resolved yet because the relevant real-world truth does not exist or has not been published at resolution time.
+- `Unresolvable` - the statement cannot be safely resolved from available evidence, auxiliary data, or voting consensus.
 
 **TooEarly**
-A first-class outcome for premature assertions. It is distinct from `False`
-because the statement may later become resolvable once the real-world event or
-official source exists.
+A first-class outcome for premature assertions. It is distinct from `False` because the same statement may later become resolvable.
 
 **Unresolvable**
-A first-class outcome for statements that cannot be safely resolved under the
-provided criteria. It is not a protocol failure.
+A first-class outcome for statements that cannot be safely resolved. It is not a protocol failure.
 
 ## Participants
 
 **Asserter** - `asserter: Pubkey`
 The participant who submits an assertion and locks the assertion bond.
 
-**Disputer** - `disputer: Pubkey`
-The participant who challenges an assertion or an LLM result by posting a dispute
-bond. Disputers have direct financial upside from catching incorrect assertions.
+**Disputer**
+The participant who challenges the current resolution stage by posting a dispute bond.
+
+**LLM Disputer**
+The first disputer. This participant challenges the default optimistic `True` assumption and triggers LLM resolution.
+
+**Vote Disputer**
+The second disputer. This participant challenges the proposed LLM resolution and triggers OPAL voting.
 
 **Voter**
-An OPAL holder who locks OPAL to participate in the final private voting
-escalation.
+An OPAL holder who locks OPAL to participate in the final private voting escalation.
 
 **LLM Resolver**
-The v1 resolution service for disputed assertions. It uses a Switchboard custom
-feed to call a configured single-LLM API and post the resulting verdict.
+The v1 resolution service for first disputes. It uses Switchboard On-Demand/Oracle Quotes to call a configured LLM path and return a numeric outcome code.
 
 **LLM Council**
-A future hardening path where multiple models or model operators produce
-independent outputs before aggregation.
+A future hardening path where multiple models or model operators produce independent outputs before aggregation.
 
 **Integrator**
-Any protocol or application that consumes Opal outcomes. Integrators may display
-`Asserted` statements as tentative optimistic truth, but final settlement should
-require `state == Resolved`.
+Any protocol or application that consumes Opal outcomes. Integrators can infer the current resolution stage from `AssertionAccount.state` and the linked round accounts, but final settlement should require `state == Resolved`.
 
 ## Accounts
 
 **AssertionAccount** - `seeds: [b"assertion", id]`
-The primary PDA for an assertion. It stores the statement, auxiliary data hash,
-asserter, bond vault, current state, liveness deadline, optional outcome, and
-finalization metadata.
+The primary PDA for an assertion. It stores the statement, auxiliary data hash, current state, final outcome, dispute pointers, resolution round pointers, and finalization metadata.
 
-**DisputeAccount** - `seeds: [b"dispute", assertion_pubkey, dispute_index]`
-The PDA created for each dispute event. It stores the disputer, bond amount,
-timestamp, dispute index, and challenged phase.
+**LLMDisputeAccount** - `seeds: [b"llm_dispute", assertion_pubkey]`
+The first dispute account. It records the disputer, linked `LLMResolutionRound`, settlement resolution, and whether the dispute was correct.
+
+**VoteDisputeAccount** - `seeds: [b"vote_dispute", assertion_pubkey]`
+The second dispute account. It records the disputer, the LLM resolution it challenged, linked `VoteResolutionRound`, settlement resolution, and whether the dispute was correct.
 
 **BondVault**
-A PDA-controlled USDC token account that holds assertion and dispute collateral
-until settlement.
+A PDA-controlled PUSD token account that holds assertion and dispute collateral until settlement.
 
-**ResolutionRound** - `seeds: [b"round", assertion_pubkey]`
-The account that tracks disputed resolution: LLM resolver output, challenge
-window, voting metadata, aggregate result, and final outcome.
+**LLMResolutionRound** - `seeds: [b"llm_round", assertion_pubkey]`
+The account that tracks Switchboard-backed LLM resolution for the first dispute. Its `outcome` is the proposed LLM resolution while the assertion is in `AssertedLLM`.
 
-**VoteRecord** - `seeds: [b"vote", assertion_pubkey, voter_pubkey]`
-The per-voter record for an escalated assertion. It tracks locked OPAL, private
-vote commitment or reveal metadata, vote timing, and settlement status.
+**VoteResolutionRound** - `seeds: [b"vote_round", assertion_pubkey]`
+The account that tracks MagicBlock private voting for the second dispute.
+
+**VoteRecord** - `seeds: [b"vote", vote_round_pubkey, voter_pubkey]`
+The per-voter record for an escalated assertion. It tracks locked OPAL, private vote metadata, vote timing, and settlement status.
 
 **ProtocolConfig**
-The account containing tunable protocol parameters such as bond ratios, fee
-shares, windows, and the supermajority threshold.
+The account containing tunable protocol parameters such as bond ratios, fee shares, windows, Switchboard config, MagicBlock config, and the supermajority threshold.
 
 **Treasury**
-The protocol-controlled destination for configured USDC fees and treasury shares.
+The protocol-controlled destination for configured PUSD fees and treasury shares.
 
 ## Economics
 
 **Assertion Bond**
-USDC collateral posted by the asserter when creating an assertion.
+PUSD collateral posted by the asserter when creating an assertion.
 
 **Dispute Bond**
-USDC collateral posted by a disputer when challenging an assertion or LLM result.
+PUSD collateral posted by an LLM disputer or vote disputer.
 
 **OPAL**
-The protocol token used for voting weight, governance/config control, and voter
-participation incentives.
+The protocol token used for voting weight, governance/config control, and voter participation incentives.
+
+**Dispute Correctness**
+Whether a dispute was upheld by its settlement layer. The first dispute is correct when settlement resolves to anything other than `True`. The second dispute is correct when the final vote resolution differs from the LLM resolution it challenged.
 
 **Settlement Split**
-The configured distribution of slashed collateral and protocol fees between the
-winning side, correct voters, and treasury.
+The configured distribution of slashed collateral and protocol fees between correct disputers, correct voters, and treasury.
 
 **Slashing**
-Loss of some or all posted collateral or locked voting stake for being on the
-wrong side of a finalized dispute, according to protocol parameters.
-
-**Economic Symmetry**
-The design principle that asserters and disputers both post meaningful collateral
-so incorrect assertions and frivolous disputes are both costly.
+Loss of some or all posted collateral or locked voting stake for being on the wrong side of a finalized dispute, according to protocol parameters.
 
 ## Time Windows
 
 **Liveness Window** - `liveness_deadline`
-The period during which an `Asserted` statement is challengeable. If no dispute is
-filed before the deadline, the assertion finalizes as `Resolved(True)`.
+The period during which an `Asserted` statement can receive its first dispute. If no dispute is filed before the deadline, the assertion finalizes as `Resolved(True)`.
 
-**LLM Challenge Window**
-The period after the v1 LLM resolver posts a result during which a disputer may
-challenge that result and escalate to voting.
+**LLM Challenge Window** - `llm_challenge_deadline`
+The period after the LLM resolver posts a result during which a vote disputer may challenge that result.
+
+**Vote Setup Window**
+The short intermediary period represented by `PendingVote`, during which the vote round is initialized and optionally can be extended to give time for community discussion before votes are accepted.
 
 **Voting Window**
-The period during which OPAL holders cast private votes in the MagicBlock voting
-environment.
+The period during which OPAL holders cast private votes in the MagicBlock voting environment.
 
 **Reveal Phase**
-The period after private voting closes, when votes are settled onchain and
-tallied.
+The period after private voting closes, when votes are settled onchain and tallied.
 
 **Time-Weighted Average Vote** - `TWAV`
-The rule that a vote's influence is `locked_opal * time_weight`, giving earlier
-commitments more weight than late commitments.
+The rule that a vote's influence is `locked_opal * time_weight`, giving earlier commitments more weight than late commitments.
 
 ## Resolution Terms
 
-**Switchboard Custom Feed**
-The v1 mechanism for calling the configured LLM API and posting resolver output
-back to the protocol.
+**Switchboard On-Demand Feed**
+The v1 mechanism for producing the LLM outcome code. The feed should return a numeric code that maps to `True`, `False`, `TooEarly`, or `Unresolvable`, and the program should verify feed identity, queue, freshness, and value before accepting it.
 
-**MagicBlock Ephemeral Rollup**
-The private voting environment used for the OPAL-weighted escalation layer.
+**MagicBlock Private Ephemeral Rollup**
+The private execution environment used for the OPAL-weighted voting escalation.
+
+**Private Payments API**
+A MagicBlock API for private SPL token deposit, transfer, and withdrawal transactions. It may help with OPAL custody flows, but Opal vote casting should be a custom private voting instruction rather than only a token transfer.
 
 **Supermajority Threshold** - `supermajority_bps = 6700`
-The required weighted-vote threshold for a decisive voting outcome. If no outcome
-reaches the threshold, the assertion resolves `Unresolvable`.
-
-**Schelling Point**
-The answer honest participants are expected to converge on because it reflects
-external reality under the assertion's criteria.
+The required weighted-vote threshold for a decisive voting outcome. If no outcome reaches the threshold, the assertion resolves `Unresolvable`.
 
 ## Quick Reference
 
 | Concept | Account / Type | Notes |
 | --- | --- | --- |
-| Assertion | `AssertionAccount` | One natural-language assertion |
-| Statement text | `statement: String` | Short onchain statement |
-| Resolution criteria | `auxiliary_hash: String` | IPFS or Arweave content hash |
-| Lifecycle | `AssertionState` | `Asserted`, `PendingLLM`, `Voting`, `Resolved` |
-| Final verdict | `ResolutionOutcome` | `True`, `False`, `TooEarly`, `Unresolvable` |
-| Challenge | `DisputeAccount` | One per dispute event |
-| Disputed resolution | `ResolutionRound` | LLM and voting metadata |
-| Individual vote | `VoteRecord` | One per voter per assertion |
-| Collateral asset | USDC | Bonds, slashing, rewards, treasury |
+| Assertion | `AssertionAccount` | One natural-language statement with collateral |
+| Statement text | `statement: String` | Short onchain text |
+| Auxiliary data | `auxiliary_hash: String` | Offchain text hash |
+| Lifecycle | `AssertionState` | `Asserted`, `PendingLLM`, `AssertedLLM`, `PendingVote`, `Voting`, `Resolved` |
+| Final answer | `outcome` | Set only in `Resolved` |
+| First dispute | `LLMDisputeAccount` | Challenges default optimistic `True` |
+| Second dispute | `VoteDisputeAccount` | Challenges LLM resolution |
+| First resolution | `LLMResolutionRound` | Switchboard-backed LLM result |
+| Final escalation | `VoteResolutionRound` | MagicBlock private vote |
+| Collateral asset | PUSD | Bonds, slashing, rewards, treasury |
 | Voting asset | OPAL | Voting weight and governance |
