@@ -68,12 +68,12 @@ V1 uses Switchboard On-Demand/Oracle Quotes to produce the LLM result. A Switchb
 
 Recommended outcome code mapping:
 
-| Code | Outcome |
-| --- | --- |
-| `0` | `True` |
-| `1` | `False` |
-| `2` | `TooEarly` |
-| `3` | `Unresolvable` |
+| Code | Outcome        |
+| ---- | -------------- |
+| `0`  | `True`         |
+| `1`  | `False`        |
+| `2`  | `TooEarly`     |
+| `3`  | `Unresolvable` |
 
 The LLM path should:
 

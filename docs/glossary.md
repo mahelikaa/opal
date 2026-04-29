@@ -159,16 +159,16 @@ The required weighted-vote threshold for a decisive voting outcome. If no outcom
 
 ## Quick Reference
 
-| Concept | Account / Type | Notes |
-| --- | --- | --- |
-| Assertion | `AssertionAccount` | One natural-language statement with collateral |
-| Statement text | `statement: String` | Short onchain text |
-| Auxiliary data | `auxiliary_hash: String` | Offchain text hash |
-| Lifecycle | `AssertionState` | `Asserted`, `PendingLLM`, `AssertedLLM`, `PendingVote`, `Voting`, `Resolved` |
-| Final answer | `outcome` | Set only in `Resolved` |
-| First dispute | `LLMDisputeAccount` | Challenges default optimistic `True` |
-| Second dispute | `VoteDisputeAccount` | Challenges LLM resolution |
-| First resolution | `LLMResolutionRound` | Switchboard-backed LLM result |
-| Final escalation | `VoteResolutionRound` | MagicBlock private vote |
-| Collateral asset | PUSD | Bonds, slashing, rewards, treasury |
-| Voting asset | OPAL | Voting weight and governance |
+| Concept          | Account / Type           | Notes                                                                        |
+| ---------------- | ------------------------ | ---------------------------------------------------------------------------- |
+| Assertion        | `AssertionAccount`       | One natural-language statement with collateral                               |
+| Statement text   | `statement: String`      | Short onchain text                                                           |
+| Auxiliary data   | `auxiliary_hash: String` | Offchain text hash                                                           |
+| Lifecycle        | `AssertionState`         | `Asserted`, `PendingLLM`, `AssertedLLM`, `PendingVote`, `Voting`, `Resolved` |
+| Final answer     | `outcome`                | Set only in `Resolved`                                                       |
+| First dispute    | `LLMDisputeAccount`      | Challenges default optimistic `True`                                         |
+| Second dispute   | `VoteDisputeAccount`     | Challenges LLM resolution                                                    |
+| First resolution | `LLMResolutionRound`     | Switchboard-backed LLM result                                                |
+| Final escalation | `VoteResolutionRound`    | MagicBlock private vote                                                      |
+| Collateral asset | PUSD                     | Bonds, slashing, rewards, treasury                                           |
+| Voting asset     | OPAL                     | Voting weight and governance                                                 |
