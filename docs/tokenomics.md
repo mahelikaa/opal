@@ -145,22 +145,22 @@ The exact `time_weight` curve belongs in protocol config or implementation docs,
 
 The following names should be used consistently in code and docs:
 
-| Parameter | Purpose |
-| --- | --- |
-| `assertion_bond_min_PUSD` | Minimum PUSD bond for a new assertion |
-| `llm_dispute_bond_ratio` | First dispute bond relative to assertion bond |
-| `vote_dispute_bond_ratio` | Second dispute bond relative to assertion bond or first dispute bond |
-| `protocol_fee_bps` | Protocol fee applied during settlement |
-| `llm_disputer_reward_share_bps` | Share of slashed PUSD allocated to a correct LLM disputer |
-| `vote_disputer_reward_share_bps` | Share of slashed PUSD allocated to a correct vote disputer |
-| `voter_reward_share_bps` | Share of slashed PUSD allocated to correct voters |
-| `treasury_share_bps` | Share of slashed PUSD allocated to treasury |
-| `incorrect_vote_slash_bps` | OPAL slash rate for incorrect voters |
-| `supermajority_bps` | Required weighted-vote threshold; default `6700` |
-| `liveness_window_seconds` | Time an assertion remains open for first dispute |
-| `llm_challenge_window_seconds` | Time to challenge the LLM result |
-| `vote_setup_window_seconds` | Time allowed to initialize MagicBlock voting before vote casting starts |
-| `voting_window_seconds` | Time OPAL holders have to cast private votes |
+| Parameter                        | Purpose                                                                 |
+| -------------------------------- | ----------------------------------------------------------------------- |
+| `assertion_bond_min_PUSD`        | Minimum PUSD bond for a new assertion                                   |
+| `llm_dispute_bond_ratio`         | First dispute bond relative to assertion bond                           |
+| `vote_dispute_bond_ratio`        | Second dispute bond relative to assertion bond or first dispute bond    |
+| `protocol_fee_bps`               | Protocol fee applied during settlement                                  |
+| `llm_disputer_reward_share_bps`  | Share of slashed PUSD allocated to a correct LLM disputer               |
+| `vote_disputer_reward_share_bps` | Share of slashed PUSD allocated to a correct vote disputer              |
+| `voter_reward_share_bps`         | Share of slashed PUSD allocated to correct voters                       |
+| `treasury_share_bps`             | Share of slashed PUSD allocated to treasury                             |
+| `incorrect_vote_slash_bps`       | OPAL slash rate for incorrect voters                                    |
+| `supermajority_bps`              | Required weighted-vote threshold; default `6700`                        |
+| `liveness_window_seconds`        | Time an assertion remains open for first dispute                        |
+| `llm_challenge_window_seconds`   | Time to challenge the LLM result                                        |
+| `vote_setup_window_seconds`      | Time allowed to initialize MagicBlock voting before vote casting starts |
+| `voting_window_seconds`          | Time OPAL holders have to cast private votes                            |
 
 Governance may tune these values, but integrators should be able to identify the active config used by any assertion.
 
