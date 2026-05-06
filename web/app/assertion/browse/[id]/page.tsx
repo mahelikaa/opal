@@ -16,8 +16,7 @@ import { getTimeRemaining } from '@/lib/helpers';
 import type { ResolutionOutcome } from '@/types';
 
 export default function StatementPage() {
-  const params = useParams();
-  const id = params?.id as string;
+  const { id } = useParams();
 
   const assertion = ASSERTIONS.find((s) => s.id === id);
 
