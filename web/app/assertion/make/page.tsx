@@ -73,6 +73,10 @@ export default function MakeAssertion() {
         e.preventDefault();
         nextSection();
       }
+      else if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        e.preventDefault();
+        nextSection();
+      }
     };
 
     window.addEventListener('keydown', handleKeyDown);
