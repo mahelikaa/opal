@@ -1,16 +1,16 @@
 'use client';
 
+import { notFound, useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { useParams, notFound } from 'next/navigation';
 
+import { LinkBreakIcon } from '@phosphor-icons/react';
 import { motion as m } from 'motion/react';
 
-import Container from '@/components/common/container';
 import Timeline from '@/components/assertion/timeline';
+import Container from '@/components/common/container';
 import { Button } from '@/components/ui/button';
 import { ASSERTIONS } from '@/data/assertion';
 import { getTimeRemaining } from '@/lib/helpers';
-import { LinkBreakIcon } from '@phosphor-icons/react';
 
 export default function StatementPage() {
   const { id } = useParams();
@@ -21,12 +21,12 @@ export default function StatementPage() {
     notFound();
   }
 
-  const [remainingTime, setRemainingTime] = useState('—');
+  const [remainingTime, setRemainingTime] = useState(() =>
+    statement.livenessDeadline ? getTimeRemaining(statement.livenessDeadline) : '—'
+  );
 
   useEffect(() => {
     if (!statement?.livenessDeadline) return;
-
-    setRemainingTime(getTimeRemaining(statement.livenessDeadline));
 
     const interval = setInterval(() => {
       setRemainingTime(getTimeRemaining(statement.livenessDeadline));
@@ -37,11 +37,11 @@ export default function StatementPage() {
 
   return (
     <Container className="border-muted-foreground/50 border-x border-dashed py-16">
-      <header className="border-foreground/50 flex items-center justify-between border-b border-dashed px-4 h-16">
-        <h2 className="md:text-sm text-xs font-semibold tracking-tight uppercase">
+      <header className="border-foreground/50 flex h-16 items-center justify-between border-b border-dashed px-4">
+        <h2 className="text-xs font-semibold tracking-tight uppercase md:text-sm">
           BOND: <span className="text-orange-300">{statement.bondAmountPUSD} PUSD</span>
         </h2>
-        <h2 className="md:text-sm text-xs font-semibold tracking-tight uppercase">
+        <h2 className="text-xs font-semibold tracking-tight uppercase md:text-sm">
           Time Remaining: {remainingTime}
         </h2>
       </header>
@@ -51,7 +51,7 @@ export default function StatementPage() {
           <m.h1
             layout
             layoutId={`statement-${statement.id}`}
-            className="w-fit text-3xl tracking-tight font-medium md:text-4xl"
+            className="w-fit text-3xl font-medium tracking-tight md:text-4xl"
           >
             {statement.statement}
           </m.h1>

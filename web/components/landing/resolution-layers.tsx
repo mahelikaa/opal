@@ -1,11 +1,11 @@
-import CornerMarker from "../common/corner-marker";
+import CornerMarker from '../common/corner-marker';
 
 export default function ResolutionLayers() {
   return (
     <>
       <section className="relative grid gap-8 overflow-x-clip px-4 py-32 md:grid-cols-5">
         <div className="col-span-3 flex flex-col justify-between gap-6">
-          <h2 className="mt-3 text-3xl font-bold tracking-tight text-center text-balance uppercase md:text-4xl">
+          <h2 className="mt-3 text-center text-3xl font-bold tracking-tight text-balance uppercase md:text-4xl">
             State determines the current answer
           </h2>
         </div>
@@ -42,7 +42,7 @@ export default function ResolutionLayers() {
             </article>
           ))}
         </div>
-        <CornerMarker position="bottom"/>
+        <CornerMarker position="bottom" />
       </section>
       <span className="border-muted-foreground/50 pointer-events-none absolute right-0 left-0 z-20 h-0.5 w-screen border-b border-dashed" />
     </>

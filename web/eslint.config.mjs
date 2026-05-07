@@ -1,7 +1,7 @@
-import next from 'eslint-config-next';
 import nextPlugin from '@next/eslint-plugin-next';
-import prettier from 'eslint-config-prettier';
 import typescriptEslint from '@typescript-eslint/eslint-plugin';
+import next from 'eslint-config-next';
+import prettier from 'eslint-config-prettier';
 
 const eslintConfig = [
   ...next,

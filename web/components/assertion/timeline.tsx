@@ -47,10 +47,10 @@ export default function Timeline({ statement }: { statement: AssertionAccount | 
         <span className="text-muted-foreground text-xs whitespace-nowrap uppercase">
           {statement.livenessDeadline
             ? new Date(statement.livenessDeadline).toLocaleDateString('en-US', {
-              day: '2-digit',
-              month: 'short',
-              year: 'numeric',
-            })
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric',
+              })
             : '-'}
         </span>
         {/* !TBD: Make terminal state label dynamic based on assertion.state */}

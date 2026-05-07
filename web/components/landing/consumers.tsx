@@ -1,11 +1,11 @@
-import CornerMarker from "../common/corner-marker";
+import CornerMarker from '../common/corner-marker';
 
 export default function Consumer() {
   return (
     <>
       <section className="relative overflow-x-clip px-4 py-32">
-        <div className="mb-16 max-w-3xl mx-auto">
-          <h2 className="mt-3 text-3xl font-bold tracking-tight text-balance text-center uppercase md:text-4xl">
+        <div className="mx-auto mb-16 max-w-3xl">
+          <h2 className="mt-3 text-center text-3xl font-bold tracking-tight text-balance uppercase md:text-4xl">
             Built for integrators, challengers, and protocol operators
           </h2>
         </div>
@@ -43,7 +43,7 @@ export default function Consumer() {
             </article>
           ))}
         </div>
-        <CornerMarker position="bottom"/>
+        <CornerMarker position="bottom" />
       </section>
       <span className="border-muted-foreground/50 pointer-events-none absolute right-0 left-0 z-20 h-0.5 w-screen border-b border-dashed" />
     </>

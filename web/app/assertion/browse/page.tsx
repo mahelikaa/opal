@@ -2,11 +2,11 @@
 
 import { useMemo, useState } from 'react';
 
-import Container from '@/components/common/container';
-import Header from '@/components/assertion/feed-header';
 import AssertionCard from '@/components/assertion/assertion-card';
+import Header from '@/components/assertion/feed-header';
+import Container from '@/components/common/container';
 import { ASSERTIONS } from '@/data/assertion';
-import type { StateFilter, OutcomeFilter, SortField } from '@/types/filters';
+import type { OutcomeFilter, SortField, StateFilter } from '@/types/filters';
 
 export default function Assertion() {
   const [sortField, setSortField] = useState<SortField>('createdAt');
@@ -28,8 +28,7 @@ export default function Assertion() {
     const filtered = ASSERTIONS.filter((assertion) => {
       const matchesState =
         stateFilter === 'All' || stateGroups[stateFilter].includes(assertion.state);
-      const matchesOutcome =
-        outcomeFilter === 'All' || assertion.outcome === outcomeFilter;
+      const matchesOutcome = outcomeFilter === 'All' || assertion.outcome === outcomeFilter;
 
       return matchesState && matchesOutcome;
     });
@@ -56,7 +55,7 @@ export default function Assertion() {
   }, [outcomeFilter, sortField, sortOrder, stateFilter]);
 
   return (
-    <Container className="border-muted-foreground/50 border-x min-h-screen border-dashed flex flex-col">
+    <Container className="border-muted-foreground/50 flex min-h-screen flex-col border-x border-dashed">
       <Header
         sortField={sortField}
         sortOrder={sortOrder}
@@ -70,7 +69,7 @@ export default function Assertion() {
       <div className="flex-1 px-4 pt-24 pb-8">
         {assertions.length === 0 ? (
           <div className="border-muted-foreground/40 bg-muted/10 text-muted-foreground flex h-full flex-col items-center justify-center gap-2 border border-dashed px-6 text-center">
-            <p className="text-base font-medium uppercase tracking-wide">
+            <p className="text-base font-medium tracking-wide uppercase">
               No assertions match these filters.
             </p>
             <p className="text-sm">
