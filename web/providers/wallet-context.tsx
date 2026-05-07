@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode, createContext, useContext, useState } from 'react';
+import { type ReactNode, createContext, useContext, useState } from 'react';
 
 import { MOCK_WALLET_ADDRESS } from '@/data/wallet';
 

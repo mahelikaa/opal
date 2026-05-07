@@ -58,6 +58,7 @@ export default function ActivityNavigation() {
     return () => clearTimeout(timer);
   }, [isCopied]);
 
+  // !TBD: Add error handling for clipboard API failures
   const handleCopy = async () => {
     if (address) {
       await navigator.clipboard.writeText(address);

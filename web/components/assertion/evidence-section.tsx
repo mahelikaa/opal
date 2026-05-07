@@ -40,9 +40,18 @@ export default function EvidenceSection({
               <FileTextIcon size={18} className="text-muted-foreground/50" />
               <span className="text-muted-foreground/50 text-sm md:text-sm">Auxiliary data</span>
             </div>
+<<<<<<< HEAD
 >>>>>>> ba81415 (fix: resolved few more coderabbit reviews)
             <Textarea
               placeholder="Add supporting notes or links."
+=======
+            <label htmlFor="auxiliary-data" className="sr-only">
+              Auxiliary Data
+            </label>
+            <Textarea
+              id="auxiliary-data"
+              placeholder="Describe how this statement should be resolved. Include evidence sources, ambiguity handling, edge cases, and explicit criteria for TRUE vs FALSE outcomes."
+>>>>>>> 272e5b5 (fix eslint and type imports)
               value={auxiliaryData}
               onChange={(e) => setAuxiliaryData(e.target.value)}
 <<<<<<< HEAD

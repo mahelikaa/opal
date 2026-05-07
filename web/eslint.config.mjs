@@ -8,18 +8,20 @@ const __dirname = dirname(__filename);
 const compat = new FlatCompat({ baseDirectory: __dirname });
 
 const eslintConfig = [
-  ...compat.extends(
-    'next/core-web-vitals',
-    'next/typescript',
-    'plugin:tailwindcss/recommended',
-    'prettier'
-  ),
+  ...next,
   {
+    name: 'next/core-web-vitals',
+    rules: nextPlugin.configs['core-web-vitals'].rules,
+  },
+  prettier,
+  {
+    files: ['**/*.ts', '**/*.tsx'],
+    plugins: {
+      '@typescript-eslint': typescriptEslint,
+    },
     rules: {
       '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
       '@typescript-eslint/consistent-type-imports': 'error',
-      'tailwindcss/classnames-order': 'warn',
-      'tailwindcss/no-contradicting-classname': 'error',
     },
   },
 ];
