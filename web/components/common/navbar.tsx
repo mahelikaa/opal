@@ -3,14 +3,13 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 
-import { ListIcon, MagnifyingGlassIcon, XIcon } from '@phosphor-icons/react';
+import { ListIcon, XIcon } from '@phosphor-icons/react';
 import { AnimatePresence } from 'motion/react';
 
 import { useWallet } from '@/providers/wallet-context';
 
 import Container from '../common/container';
 import { Button } from '../ui/button';
-import { InputGroup } from '../ui/input-group';
 import CornerMarker from './corner-marker';
 import NavbarMobile from './mobile-navbar';
 import { SearchDialog } from './search-dialog';

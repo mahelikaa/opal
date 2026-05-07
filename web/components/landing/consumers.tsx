@@ -1,13 +1,24 @@
+<<<<<<<
 'use client';
 import { motion as m } from 'motion/react';
+=======
+import CornerMarker from '../common/corner-marker';
+>>>>>>>
 
 export default function Consumer() {
   return (
     <>
+<<<<<<<
       <section className="relative overflow-x-clip px-4 py-24">
         <div className="mx-auto mb-16 max-w-3xl">
           <h2 className="mt-3 text-center text-3xl font-bold tracking-tight text-balance uppercase md:text-4xl">
             Built for integrators
+=======
+      <section className="relative overflow-x-clip px-4 py-32">
+        <div className="mx-auto mb-16 max-w-3xl">
+          <h2 className="mt-3 text-center text-3xl font-bold tracking-tight text-balance uppercase md:text-4xl">
+            Built for integrators, challengers, and protocol operators
+>>>>>>>
           </h2>
         </div>
 
@@ -67,7 +78,7 @@ export default function Consumer() {
           className="border-primary absolute top-6 right-4 z-20 size-4 border-t border-r"
         />
       </section>
-      <span className="border-muted-foreground/50 pointer-events-none absolute right-0 left-0 z-20 h-0.5 w-screen border-b border-dashed" />
+      <span className="border-muted-foreground/50 top-screen pointer-events-none absolute right-0 left-0 z-20 h-0.5 w-screen border-b border-dashed" />
     </>
   );
 }

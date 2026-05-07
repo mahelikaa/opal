@@ -120,21 +120,21 @@ export default function ParamsSection({
             transition={{ duration: 0.25, ease: 'easeOut' }}
             className="relative h-full"
           >
-            <div className="absolute top-0 left-6 right-6 h-px bg-linear-to-r from-transparent via-primary/40 to-transparent" />
+            <div className="via-primary/40 absolute top-0 right-6 left-6 h-px bg-linear-to-r from-transparent to-transparent" />
 
             <div className="grid h-full grid-cols-1 gap-0 px-6 py-8 md:grid-cols-2">
               <div className="flex flex-col justify-center gap-6 pr-0 md:pr-10">
                 <div className="flex items-center gap-3">
-                  <span className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/40 uppercase">
+                  <span className="text-muted-foreground/40 font-mono text-[10px] tracking-[0.2em] uppercase">
                     01 /
                   </span>
-                  <span className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/55 uppercase">
+                  <span className="text-muted-foreground/55 font-mono text-[10px] tracking-[0.2em] uppercase">
                     Dispute Window
                   </span>
                 </div>
 
                 <div className="flex flex-wrap gap-2">
-                  {windows.map((w, i) => {
+                  {windows.map((w, _i) => {
                     const active = window_ && window_.value === w.value;
                     return (
                       <m.button
@@ -150,16 +150,16 @@ export default function ParamsSection({
                         <span
                           className={`absolute inset-0 transition-all duration-200 ${
                             active
-                              ? 'border border-primary/60 shadow-[inset_0_0_12px_rgba(var(--primary-rgb),0.06),0_0_0_1px_rgba(var(--primary-rgb),0.08)]'
-                              : 'border border-muted-foreground/15 hover:border-muted-foreground/30'
+                              ? 'border-primary/60 border shadow-[inset_0_0_12px_rgba(var(--primary-rgb),0.06),0_0_0_1px_rgba(var(--primary-rgb),0.08)]'
+                              : 'border-muted-foreground/15 hover:border-muted-foreground/30 border'
                           }`}
                         />
                         {active && (
                           <>
-                            <span className="absolute top-0 left-0 h-1.5 w-1.5 border-t border-l border-primary/80" />
-                            <span className="absolute top-0 right-0 h-1.5 w-1.5 border-t border-r border-primary/80" />
-                            <span className="absolute bottom-0 left-0 h-1.5 w-1.5 border-b border-l border-primary/80" />
-                            <span className="absolute bottom-0 right-0 h-1.5 w-1.5 border-b border-r border-primary/80" />
+                            <span className="border-primary/80 absolute top-0 left-0 h-1.5 w-1.5 border-t border-l" />
+                            <span className="border-primary/80 absolute top-0 right-0 h-1.5 w-1.5 border-t border-r" />
+                            <span className="border-primary/80 absolute bottom-0 left-0 h-1.5 w-1.5 border-b border-l" />
+                            <span className="border-primary/80 absolute right-0 bottom-0 h-1.5 w-1.5 border-r border-b" />
                           </>
                         )}
                         <span className="relative">{w.label}</span>
@@ -168,63 +168,59 @@ export default function ParamsSection({
                   })}
                 </div>
 
-                <p className="font-mono text-[11px] leading-relaxed text-muted-foreground/35 max-w-70">
+                <p className="text-muted-foreground/35 max-w-70 font-mono text-[11px] leading-relaxed">
                   Shorter windows resolve faster. Longer windows allow more time to dispute.
                 </p>
               </div>
 
-              <div className="hidden md:block absolute left-1/2 top-8 bottom-8 w-px bg-linear-to-b from-transparent via-muted-foreground/15 to-transparent" />
+              <div className="via-muted-foreground/15 absolute top-8 bottom-8 left-1/2 hidden w-px bg-linear-to-b from-transparent to-transparent md:block" />
 
-              <div className="flex flex-col justify-center gap-7 border-t border-dashed border-muted-foreground/15 pt-7 md:border-t-0 md:pt-0 md:pl-10">
-
+              <div className="border-muted-foreground/15 flex flex-col justify-center gap-7 border-t border-dashed pt-7 md:border-t-0 md:pt-0 md:pl-10">
                 <div className="space-y-2">
                   <div className="flex items-center gap-3">
-                    <span className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/40 uppercase">
+                    <span className="text-muted-foreground/40 font-mono text-[10px] tracking-[0.2em] uppercase">
                       02 /
                     </span>
-                    <span className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/55 uppercase">
+                    <span className="text-muted-foreground/55 font-mono text-[10px] tracking-[0.2em] uppercase">
                       Assertion Bond
                     </span>
-                    <span className="font-mono text-[9px] text-muted-foreground/30 border border-muted-foreground/20 px-1.5 py-0.5 tracking-wider">
+                    <span className="text-muted-foreground/30 border-muted-foreground/20 border px-1.5 py-0.5 font-mono text-[9px] tracking-wider">
                       FIXED
                     </span>
                   </div>
 
                   <div className="flex items-baseline gap-2.5">
-                    <span className="font-mono text-4xl font-light tracking-tight text-primary leading-none">
+                    <span className="text-primary font-mono text-4xl leading-none font-light tracking-tight">
                       {bond}
                     </span>
-                    <span className="font-mono text-base text-primary/60 tracking-widest">PUSD</span>
+                    <span className="text-primary/60 font-mono text-base tracking-widest">
+                      PUSD
+                    </span>
                   </div>
 
-                  <p className="font-mono text-[11px] text-muted-foreground/35">
+                  <p className="text-muted-foreground/35 font-mono text-[11px]">
                     ↩ Returned if undisputed within window.
                   </p>
                 </div>
 
                 <div className="space-y-3">
-                  <div className="h-px bg-muted-foreground/10" />
+                  <div className="bg-muted-foreground/10 h-px" />
 
                   <div className="flex items-center gap-3">
-                    <span className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/40 uppercase">
+                    <span className="text-muted-foreground/40 font-mono text-[10px] tracking-[0.2em] uppercase">
                       03 /
                     </span>
-                    <span className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/55 uppercase">
+                    <span className="text-muted-foreground/55 font-mono text-[10px] tracking-[0.2em] uppercase">
                       Resolution Timing
                     </span>
                   </div>
 
                   <div className="flex items-start gap-2.5 pl-0.5">
-                    <Clock
-                      size={13}
-                      className="mt-0.75 shrink-0 text-muted-foreground/35"
-                    />
-                    <div className="font-mono text-sm leading-6 text-muted-foreground/50 space-y-0.5">
+                    <Clock size={13} className="text-muted-foreground/35 mt-0.75 shrink-0" />
+                    <div className="text-muted-foreground/50 space-y-0.5 font-mono text-sm leading-6">
                       <div>
                         Window{' '}
-                        <span className="text-foreground/75 font-medium">
-                          {window_?.label}
-                        </span>
+                        <span className="text-foreground/75 font-medium">{window_?.label}</span>
                       </div>
                       <div>
                         Expires{' '}
@@ -235,8 +231,11 @@ export default function ParamsSection({
                     </div>
                   </div>
                 </div>
+<<<<<<< HEAD
 
 >>>>>>> ba81415 (fix: resolved few more coderabbit reviews)
+=======
+>>>>>>> 4d68d6d (lint fmt)
               </div>
             </div>
           </m.div>

@@ -1,11 +1,7 @@
-import { FlatCompat } from '@eslint/eslintrc';
-import { dirname } from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-const compat = new FlatCompat({ baseDirectory: __dirname });
+import nextPlugin from '@next/eslint-plugin-next';
+import typescriptEslint from '@typescript-eslint/eslint-plugin';
+import next from 'eslint-config-next';
+import prettier from 'eslint-config-prettier';
 
 const eslintConfig = [
   ...next,

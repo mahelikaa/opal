@@ -34,11 +34,13 @@ function hashPreview(str: string) {
   return Math.abs(h).toString(16).padStart(8, '0') + '...';
 }
 
+const SECTION_ORDER: Section[] = ['statement', 'params', 'evidence', 'summary'];
+
 export default function MakeAssertion() {
   const [open, setOpen] = useState<Section>('statement');
   const [statement, setStatement] = useState('');
   const bond = ASSERTION_BOND_PUSD;
-  const createdAt = Date.now();
+  const [createdAt] = useState(() => Date.now());
   const [window_, setWindow] = useState<(typeof WINDOWS)[number]>(WINDOWS[2]!);
   const [auxiliaryData, setAuxiliaryData] = useState('');
   // !TBD: Wire up real wallet connection when adapter is integrated
@@ -46,24 +48,7 @@ export default function MakeAssertion() {
 
   const toggle = (s: Section) => setOpen((prev) => (prev === s ? 'statement' : s));
 
-  const sectionOrder: Section[] = ['statement', 'params', 'evidence', 'summary'];
-  const currentIndex = sectionOrder.indexOf(open);
-
-  const nextSection = () => {
-    const nextIdx = currentIndex + 1;
-    if (nextIdx < sectionOrder.length) {
-      const next = sectionOrder[nextIdx];
-      if (next) setOpen(next);
-    }
-  };
-
-  const prevSection = () => {
-    const prevIdx = currentIndex - 1;
-    if (prevIdx >= 0) {
-      const prev = sectionOrder[prevIdx];
-      if (prev) setOpen(prev);
-    }
-  };
+  const currentIndex = SECTION_ORDER.indexOf(open);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -76,7 +61,11 @@ export default function MakeAssertion() {
       }
       else if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
         e.preventDefault();
-        nextSection();
+        const nextIdx = currentIndex + 1;
+        if (nextIdx < SECTION_ORDER.length) {
+          const next = SECTION_ORDER[nextIdx];
+          if (next) setOpen(next);
+        }
       }
     };
 

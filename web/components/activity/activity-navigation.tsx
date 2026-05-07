@@ -11,7 +11,7 @@ import {
   GridFourIcon,
   WarningOctagonIcon,
 } from '@phosphor-icons/react';
-import { CheckIcon, CopySimpleIcon } from '@phosphor-icons/react/dist/ssr';
+import { CheckIcon, CopySimpleIcon } from '@phosphor-icons/react';
 
 import Container from '../common/container';
 import { Button } from '../ui/button';
@@ -98,6 +98,12 @@ export default function ActivityNavigation() {
           <Button variant="ghost" size="icon-sm" className="ml-2" onClick={handleCopy}>
             {isCopied ? <CheckIcon weight="bold" /> : <CopySimpleIcon weight="bold" />}
           </Button>
+          <div className="px-4">
+            <span>{trimmedAddress}</span>
+            <Button variant="ghost" size="icon-sm" className="ml-2" onClick={handleCopy}>
+              {isCopied ? <CheckIcon weight="bold" /> : <CopySimpleIcon weight="bold" />}
+            </Button>
+          </div>
         </div>
       </div>
     </Container>

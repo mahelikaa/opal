@@ -17,10 +17,13 @@ import { getTimeRemaining } from '@/lib/helpers';
 import type { AssertionAccount } from '@/types';
 
 export default function AssertionCard({ data }: { data: AssertionAccount }) {
-  const [remainingTime, setRemainingTime] = useState('—');
+  const [remainingTime, setRemainingTime] = useState(() =>
+    data.livenessDeadline ? getTimeRemaining(data.livenessDeadline) : '—'
+  );
 
   useEffect(() => {
-    setRemainingTime(getTimeRemaining(data.livenessDeadline));
+    if (!data.livenessDeadline) return;
+
     const interval = setInterval(() => {
       setRemainingTime(getTimeRemaining(data.livenessDeadline));
     }, 1000);
