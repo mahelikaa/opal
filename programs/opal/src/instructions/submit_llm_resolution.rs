@@ -85,7 +85,7 @@ pub fn handler(ctx: Context<SubmitLlmResolution>) -> Result<()> {
         read_verdict(ctx.accounts.feed_2.as_ref(), &council_feeds[2], &clock)?,
     ];
 
-    let mut counts = [0u8; 4];
+    let mut counts = [0u8; OUTCOME_UNRESOLVABLE as usize + 1];
     for v in votes.iter() {
         counts[*v as usize] += 1;
     }

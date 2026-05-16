@@ -98,6 +98,10 @@ pub fn handler(ctx: Context<DisputeAssertion>, _args: DisputeAssertionArgs) -> R
     drop(assertion);
     drop(protocol_config);
     require!(bond_amount > 0, OpalError::InsufficientBondAmount);
+    require!(
+        council_feeds.iter().all(|f| *f != Pubkey::default()),
+        OpalError::CouncilFeedsNotConfigured
+    );
 
     token::transfer(
         CpiContext::new(

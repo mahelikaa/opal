@@ -1,11 +1,12 @@
 use anchor_lang::prelude::*;
+use crate::constants::COUNCIL_SIZE;
 
 #[repr(C, packed)]
 #[account(zero_copy(unsafe))]
 pub struct LlmResolutionRound {
     pub assertion: Pubkey,
     pub dispute: Pubkey,
-    pub council_feeds: [Pubkey; 3],
+    pub council_feeds: [Pubkey; COUNCIL_SIZE],
     pub switchboard_program: Pubkey,
     pub switchboard_queue: Pubkey,
     pub switchboard_feed_hash: [u8; 32],

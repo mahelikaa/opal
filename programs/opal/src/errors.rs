@@ -62,4 +62,6 @@ pub enum OpalError {
     FeedStaleOrUnverified,
     #[msg("Feed returned a value outside the valid verdict range (0–3)")]
     InvalidVerdictEncoding,
+    #[msg("Council feeds are not configured — call set_council_feeds first")]
+    CouncilFeedsNotConfigured,
 }
