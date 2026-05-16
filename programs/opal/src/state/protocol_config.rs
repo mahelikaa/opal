@@ -19,5 +19,9 @@ pub struct ProtocolConfig {
     pub llm_challenge_window_seconds: i64,
     pub vote_setup_window_seconds: i64,
     pub voting_window_seconds: i64,
+    /// The three Switchboard PullFeed pubkeys that form the LLM Council.
+    /// Snapshotted into LlmResolutionRound at first-dispute time so mid-round
+    /// rotation via set_council_feeds cannot alter an in-flight round.
+    pub council_feeds: [Pubkey; 3],
     pub bump: u8,
 }
