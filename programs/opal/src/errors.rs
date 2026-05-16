@@ -54,4 +54,12 @@ pub enum OpalError {
     InvalidAssertionBondMinimum,
     #[msg("Invalid window configuration")]
     InvalidWindowConfiguration,
+    #[msg("Feed account does not match the stored council feed pubkey")]
+    WrongFeed,
+    #[msg("Failed to parse Switchboard pull-feed account data")]
+    FeedParseFailed,
+    #[msg("Feed is stale or does not have enough verified oracle signatures")]
+    FeedStaleOrUnverified,
+    #[msg("Feed returned a value outside the valid verdict range (0–3)")]
+    InvalidVerdictEncoding,
 }
