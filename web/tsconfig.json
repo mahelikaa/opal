@@ -29,6 +29,7 @@
     "app/**/*",
     "components/**/*",
     "lib/**/*",
+    "scripts/**/*",
     "providers/**/*",
     "types/**/*",
     "data/**/*",

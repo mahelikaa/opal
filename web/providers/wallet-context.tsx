@@ -1,39 +1,41 @@
 'use client';
 
-import { type ReactNode, createContext, useContext, useState } from 'react';
+import { type ReactNode, createContext, useContext, useMemo } from 'react';
 
-import { MOCK_WALLET_ADDRESS } from '@/data/wallet';
+import { useLogin, usePrivy } from '@privy-io/react-auth';
+import { useWallets } from '@privy-io/react-auth/solana';
 
 interface WalletContextType {
-  currentAddress: string;
-  setCurrentAddress: (address: string) => void;
+  ready: boolean;
+  authenticated: boolean;
+  currentAddress: string | null;
+  login: () => void;
+  logout: () => Promise<void>;
 }
 
 const WalletContext = createContext<WalletContextType | undefined>(undefined);
 
-function isValidAddress(address: string): boolean {
-  if (!address || typeof address !== 'string') return false;
-  const trimmed = address.trim();
-  return trimmed.length >= 32 && trimmed.length <= 50;
-}
-
 export function WalletProvider({ children }: { children: ReactNode }) {
-  const [currentAddress, setCurrentAddress] = useState(MOCK_WALLET_ADDRESS);
+  const { ready: privyReady, authenticated, logout } = usePrivy();
+  const { ready: solanaWalletsReady, wallets } = useWallets();
+  const { login } = useLogin();
 
-  const setValidatedAddress = (address: string) => {
-    const trimmed = address.trim();
-    if (isValidAddress(trimmed)) {
-      setCurrentAddress(trimmed);
-    } else {
-      setCurrentAddress(MOCK_WALLET_ADDRESS);
-    }
-  };
+  const currentAddress =
+    wallets.find((wallet) => wallet.standardWallet.name === 'Privy')?.address ?? null;
+  const ready = privyReady && solanaWalletsReady;
 
-  return (
-    <WalletContext.Provider value={{ currentAddress, setCurrentAddress: setValidatedAddress }}>
-      {children}
-    </WalletContext.Provider>
+  const value = useMemo(
+    () => ({
+      ready,
+      authenticated,
+      currentAddress,
+      login,
+      logout,
+    }),
+    [authenticated, currentAddress, login, logout, ready]
   );
+
+  return <WalletContext.Provider value={value}>{children}</WalletContext.Provider>;
 }
 
 export function useWallet() {

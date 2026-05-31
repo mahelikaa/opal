@@ -12,7 +12,7 @@ import { useWallet } from '@/providers/wallet-context';
 import type { QuickFilter, SortField, StageFilter } from '@/types/filters';
 
 export default function Assertion() {
-  const { currentAddress } = useWallet();
+  const { ready, currentAddress } = useWallet();
   const [sortField, setSortField] = useState<SortField>('newest');
   const [stageFilter, setStageFilter] = useState<StageFilter>('All');
   const [quickFilters, setQuickFilters] = useState<QuickFilter[]>([]);
@@ -48,10 +48,12 @@ export default function Assertion() {
       }
 
       if (filter === 'myAssertions') {
+        if (!ready || !currentAddress) return false;
         return assertion.asserter === currentAddress;
       }
 
       if (filter === 'watching') {
+        if (!ready || !currentAddress) return false;
         return (
           assertion.asserter === currentAddress ||
           assertion.llmDispute?.disputer === currentAddress ||
@@ -93,7 +95,7 @@ export default function Assertion() {
 
       return sortField === 'oldest' ? createdAtDelta : createdAtDelta * -1;
     });
-  }, [currentAddress, quickFilters, sortField, stageFilter]);
+  }, [currentAddress, quickFilters, ready, sortField, stageFilter]);
 
   return (
     <Container className="border-muted-foreground/50 flex min-h-screen flex-col border-x border-dashed">

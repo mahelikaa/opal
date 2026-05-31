@@ -6,17 +6,15 @@ import { useCallback, useEffect, useState } from 'react';
 import { ListIcon, XIcon } from '@phosphor-icons/react';
 import { AnimatePresence } from 'motion/react';
 
-import { useWallet } from '@/providers/wallet-context';
-
 import Container from '../common/container';
 import { Button } from '../ui/button';
 import NavbarMobile from './mobile-navbar';
+import { NavbarAuth } from './navbar-auth';
 import { SearchDialog } from './search-dialog';
 
 export default function Navbar() {
   const [isMobileNavbarOpen, setIsMobileNavbarOpen] = useState<boolean>(false);
   const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false);
-  const { currentAddress } = useWallet();
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -49,27 +47,23 @@ export default function Navbar() {
             <div className="text-muted-foreground text-xs">Search</div>
             <kbd className="bg-muted rounded text-xs font-semibold">⌘ + K</kbd>
           </Button>
-          <Link href={`/u/${currentAddress}`}>
-            <Button variant="outline" size="sm">
-              Activity
-            </Button>
-          </Link>
-          <Button variant="outline" size="sm">
-            Connect Wallet
-          </Button>
+          <NavbarAuth layout="desktop" />
         </div>
         <div className="flex md:hidden">
           <Button
             onClick={() => setIsMobileNavbarOpen(!isMobileNavbarOpen)}
             size="icon-lg"
             variant="outline"
+            type="button"
           >
             {isMobileNavbarOpen ? <XIcon /> : <ListIcon />}
           </Button>
         </div>
       </Container>
       <span className="border-muted-foreground/50 absolute right-0 bottom-0 left-0 h-0.5 border-b border-dashed" />
-      <AnimatePresence mode="wait">{isMobileNavbarOpen && <NavbarMobile />}</AnimatePresence>
+      <AnimatePresence mode="wait">
+        {isMobileNavbarOpen && <NavbarMobile onClose={() => setIsMobileNavbarOpen(false)} />}
+      </AnimatePresence>
       <SearchDialog isOpen={isSearchOpen} onClose={handleCloseSearch} />
     </div>
   );

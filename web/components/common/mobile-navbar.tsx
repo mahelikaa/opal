@@ -1,8 +1,11 @@
+'use client';
+
 import Link from 'next/link';
 
 import { motion as m } from 'motion/react';
 
 import { Button } from '../ui/button';
+import { NavbarAuth } from './navbar-auth';
 
 const containerVariants = {
   hidden: {
@@ -49,7 +52,7 @@ const itemVariants = {
   },
 };
 
-export default function NavbarMobile() {
+export default function NavbarMobile({ onClose }: { onClose: () => void }) {
   return (
     <m.div
       variants={containerVariants}
@@ -59,27 +62,25 @@ export default function NavbarMobile() {
       className="bg-background fixed inset-x-0 top-16 z-10 flex flex-col gap-4 border-x border-b border-dashed p-8 shadow-lg"
     >
       <m.div variants={itemVariants}>
-        <Button variant="outline" className="w-full uppercase">
-          Connect Wallet
-        </Button>
+        <NavbarAuth layout="mobile" onClose={onClose} />
       </m.div>
       <m.div variants={itemVariants} className="w-full">
-        <Link href="/" className="w-full">
-          <Button variant="outline" className="w-full uppercase">
+        <Link href="/" className="w-full" onClick={onClose}>
+          <Button variant="outline" className="w-full uppercase" type="button">
             Dashboard
           </Button>
         </Link>
       </m.div>
       <m.div variants={itemVariants} className="w-full">
-        <Link href="/assertion/browse" className="w-full">
-          <Button variant="outline" className="w-full uppercase">
+        <Link href="/assertion/browse" className="w-full" onClick={onClose}>
+          <Button variant="outline" className="w-full uppercase" type="button">
             Explore Feed
           </Button>
         </Link>
       </m.div>
       <m.div variants={itemVariants} className="w-full">
-        <Link href="/assertion/make" className="w-full">
-          <Button variant="outline" className="w-full uppercase">
+        <Link href="/assertion/make" className="w-full" onClick={onClose}>
+          <Button variant="outline" className="w-full uppercase" type="button">
             Assert Statement
           </Button>
         </Link>
