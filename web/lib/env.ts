@@ -40,12 +40,16 @@ export function getEnv(): Env {
     process.env.NEXT_PUBLIC_SOLANA_RPC_URL,
     'NEXT_PUBLIC_SOLANA_RPC_URL'
   );
+  const solanaRpcWss = requirePublicEnv(
+    process.env.NEXT_PUBLIC_SOLANA_RPC_WSS,
+    'NEXT_PUBLIC_SOLANA_RPC_WSS'
+  );
 
   cached = {
     privyAppId: requirePublicEnv(process.env.NEXT_PUBLIC_PRIVY_APP_ID, 'NEXT_PUBLIC_PRIVY_APP_ID'),
     privyClientId: process.env.NEXT_PUBLIC_PRIVY_CLIENT_ID,
     solanaRpcUrl,
-    solanaRpcWss: process.env.NEXT_PUBLIC_SOLANA_RPC_WSS ?? solanaRpcUrl.replace(/^https:/, 'wss:'),
+    solanaRpcWss,
     privySolanaChain: 'solana:devnet',
   };
   return cached;
