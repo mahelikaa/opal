@@ -1,0 +1,7 @@
+# Opal resolves rubric-relative truth, not absolute truth
+
+Opal is an optimistic oracle, but the "truth" it resolves is defined by each assertion's **Resolution Spec** — the asserter-supplied rubric (sources and their priority, definitions, ambiguity handling, and when the statement becomes resolvable), stored off-chain on Arweave with its hash on-chain. The LLM resolver and the voters **apply that spec**; they do not adjudicate any universal reality. The same statement text can therefore resolve differently across assertions.
+
+**Why.** Real-world statements have no single objective verifier ("postponed" by whose definition, as of when?). Forcing the asserter to declare the resolution criteria turns an unbounded question ("is this true?") into a bounded, adjudicable one ("does this spec, correctly applied, yield True?"), and lets one oracle serve many use cases with different standards.
+
+**Consequences.** The Resolution Spec is the most important artifact after the statement itself, so it must stay retrievable and integrity-checkable for the whole lifecycle (hence Arweave + on-chain hash). Disputes and votes are framed as "applying this spec, the answer is X," not "in reality it's X." Garbage-spec-in → garbage-truth-out, faithfully applied; vetting the spec is the integrator's responsibility (an integrator must read the spec before trusting an outcome). See also [ADR-0005](0005-no-fault-unresolvable.md).

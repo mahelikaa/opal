@@ -1,256 +1,70 @@
-# CLAUDE.md
+# Opal — Agent Guide
 
-Behavioral guidelines to reduce common LLM coding mistakes. Merge with project-specific instructions as needed.
+Opal is a Solana (Anchor) optimistic oracle for natural-language statements. **This file is operational only — how to work in this repo.** For _what Opal is and why_, read the docs; do not duplicate them here.
 
-**Tradeoff:** These guidelines bias toward caution over speed. For trivial tasks, use judgment.
+- **Domain model & status:** [docs/glossary.md](docs/glossary.md) — start here. Every feature is tagged `[Built]` / `[MVP-target]` / `[Vision]`.
+- **Architecture & flow:** [docs/architecture.md](docs/architecture.md), [docs/resolution.md](docs/resolution.md), [docs/tokenomics.md](docs/tokenomics.md)
+- **Why things are the way they are:** [docs/adr/](docs/adr/)
 
-## 1. Think Before Coding
+> The current direction differs from older code in places: a single trusted LLM call `[MVP-target]` (the 3-feed Switchboard council is still the current `[Built]` non-mock path, being removed per [ADR-0002](docs/adr/0002-trusted-llm-resolver.md)), MagicBlock private voting, a single USDC asset, and no-fault `Unresolvable`. When code and docs disagree about _intent_, the ADRs and the status badges are authoritative.
 
-**Don't assume. Don't hide confusion. Surface tradeoffs.**
+## Commands
 
-Before implementing:
-
-- State your assumptions explicitly. If uncertain, ask.
-- If multiple interpretations exist, present them - don't pick silently.
-- If a simpler approach exists, say so. Push back when warranted.
-- If something is unclear, stop. Name what's confusing. Ask.
-
-## 2. Simplicity First
-
-**Minimum code that solves the problem. Nothing speculative.**
-
-- No features beyond what was asked.
-- No abstractions for single-use code.
-- No "flexibility" or "configurability" that wasn't requested.
-- No error handling for impossible scenarios.
-- If you write 200 lines and it could be 50, rewrite it.
-
-Ask yourself: "Would a senior engineer say this is overcomplicated?" If yes, simplify.
-
-## 3. Surgical Changes
-
-**Touch only what you must. Clean up only your own mess.**
-
-When editing existing code:
-
-- Don't "improve" adjacent code, comments, or formatting.
-- Don't refactor things that aren't broken.
-- Match existing style, even if you'd do it differently.
-- If you notice unrelated dead code, mention it - don't delete it.
-
-When your changes create orphans:
-
-- Remove imports/variables/functions that YOUR changes made unused.
-- Don't remove pre-existing dead code unless asked.
-
-The test: Every changed line should trace directly to the user's request.
-
-## 4. Goal-Driven Execution
-
-**Define success criteria. Loop until verified.**
-
-Transform tasks into verifiable goals:
-
-- "Add validation" → "Write tests for invalid inputs, then make them pass"
-- "Fix the bug" → "Write a test that reproduces it, then make it pass"
-- "Refactor X" → "Ensure tests pass before and after"
-
-For multi-step tasks, state a brief plan:
-
-```
-1. [Step] → verify: [check]
-2. [Step] → verify: [check]
-3. [Step] → verify: [check]
+```bash
+bun install              # deps
+anchor build             # build program + regenerate target/idl + target/types
+anchor test              # full TS integration suite on localnet (builds with mock-llm)
+bun run test:local       # explicit: rebuild w/ --features mock-llm, then anchor test --skip-build
+bun run format           # prettier check  (format:fix to write)
 ```
 
-Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
+> `anchor test` currently runs on **localnet with `mock-llm`**; pointing it at real devnet integration is deferred per [ADR-0006](docs/adr/0006-codebase-organization.md).
 
----
+The web frontend lives in `web/` — see [web/AGENTS.md](web/AGENTS.md).
 
-**These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.
-
----
-
-# Project Overview
-
-Opal is a Solana-native optimistic oracle for verifying natural-language statements. It treats assertions as true by default, then allows disputes to escalate through an LLM resolution round and (if challenged) a voting round.
-
-**Key technologies:**
-
-- Anchor 0.32.1 (Rust program)
-- Rust 1.89.0 (pinned in `rust-toolchain.toml`)
-- Bun (package manager and test runner)
-- `@solana/web3.js` + `@solana/spl-token` for TypeScript integration tests
-
-**Directory layout:**
+## Repo map
 
 ```
 programs/opal/src/
-  instructions/       # One file per instruction; exports handler(ctx, args) -> Result<()>
-  state/              # Zero-copy account structs
-  constants.rs        # PDA seeds, state constants, outcome constants, sentinel values
-  errors.rs           # OpalError enum
-  utils.rs            # checked_bps, checked_add_i64, sentinel helpers
-  lib.rs              # #[program] entry points
-
-tests/
-  opal.test.ts        # Integration tests (bun:test, AnchorProvider.env())
-
-web/                  # Next.js frontend (Privy + mock data) — see web/README.md
-
-target/
-  idl/opal.json       # Generated by anchor build
-  types/opal.ts       # Generated by anchor build (camelCase TS types)
+  instructions/   one file per instruction; each exports handler + Accounts + Args
+  state/          zero-copy account structs
+  constants.rs    PDA seeds, state/outcome constants, sentinels
+  errors.rs       OpalError
+  utils.rs        checked_* math, sentinel helpers
+  lib.rs          #[program] entry points
+tests/opal.test.ts          the entire test suite (no Rust unit tests)
+target/idl, target/types    generated by `anchor build`
 ```
 
-**Program ID (localnet):** `8NCcxyAzKiAHxJ9DMnADtxShYutS9w81wHcXqgCavTBy`
+> **Planned (separate PRs, decided in the ADRs):** `instructions/` regroups into `protocol/ assertion/ llm/ vote/` subdirs and the test commands split into localnet+mock vs. devnet integration — see [ADR-0006](docs/adr/0006-codebase-organization.md). The `pusd → usdc` rename — see [ADR-0004](docs/adr/0004-single-asset-usdc.md).
 
-There are **no Rust unit tests** (no `programs/opal/tests/`). All testing is done via TypeScript integration tests against a localnet validator.
+Program ID (localnet): `8NCcxyAzKiAHxJ9DMnADtxShYutS9w81wHcXqgCavTBy`
 
----
+## Hard rules — Rust
 
-# Coding Standards
+- **Zero-copy accounts:** always pair `#[account(zero_copy(unsafe))]` with `#[repr(C, packed)]` — the macro alone reorders fields and breaks the TS client's layout. **Primitive fields only** (`u8/u16/u64/u128/i64/Pubkey/[u8; N]`); never `Option`, `bool`, or enums. Use sentinels: `Pubkey::default()`, `0`/`TIMESTAMP_NONE`, `OUTCOME_NONE` (255), `BOOL_TRUE`/`BOOL_FALSE`.
+- **One instruction per file** in `instructions/`; export `handler` + `Accounts` + `Args`. Remove imports your change orphans.
+- **Constants, not magic numbers** — PDA seeds, states, outcomes, and sentinels live in `constants.rs`.
+- **Checked math only** on amounts and timestamps (`checked_*` in `utils.rs`); never raw `+ - *`.
+- **Errors:** add variants to `OpalError` (never `TemplateError`); give every variant a `#[msg("...")]`.
 
-## Rust
+## Hard rules — TypeScript tests
 
-### Instruction files
+- `AnchorProvider.env()` + `anchor.workspace.Opal`; `bun:test` (`describe`/`it`/`expect`/`beforeAll`).
+- Keep tests **flat** — nested `describe` blocks interleave with singleton state and cause ordering bugs.
 
-- One file per instruction in `programs/opal/src/instructions/`.
-- Export a `handler` free function and the `Accounts` struct + `Args` struct.
-- Import only what you use. Remove unused imports after changes.
+## Gotchas
 
-### Zero-copy state
+- **No Rust unit tests.** All coverage is `tests/opal.test.ts` against a localnet validator; `cargo test -p opal` runs an empty harness.
+- **LLM resolution in tests uses the `mock-llm` feature** (`Anchor.toml`) + `submit_mock_llm_resolution` (the authority passes the outcome). The real resolver is `[MVP-target]` — see [ADR-0002](docs/adr/0002-trusted-llm-resolver.md).
+- **Mainnet auth is commented out:** `initialize_protocol_config` has a disabled `require!(authority == crate::ID)` so tests can init with any keypair. Uncomment before mainnet.
+- **The asset is USDC.** Some code fields still read `pusd_*` pending the rename — see [ADR-0004](docs/adr/0004-single-asset-usdc.md).
 
-- Always pair `#[account(zero_copy(unsafe))]` with `#[repr(C, packed)]`.
-  The macro alone generates `#[repr(Rust, packed)]`, which lets the compiler
-  reorder fields and break the Anchor TS client's layout assumptions.
-- **Only primitive types** inside zero_copy accounts: `u8`, `i64`, `Pubkey`,
-  `[u8; N]`, `u64`, `u16`, `u128`.
-- **Never** use `Option<T>`, `bool`, or enums in zero_copy accounts.
-  Use sentinels: `Pubkey::default()` for unset pubkeys, `0` for unset timestamps,
-  `255` (`OUTCOME_NONE`) for unset outcomes, `BOOL_FALSE`/`BOOL_TRUE` for flags.
+## Working principles
 
-### Constants
+Bias toward caution; use judgment on trivial tasks.
 
-- PDA seeds, state constants, and sentinel values live in `constants.rs`.
-- Use the constants everywhere — no magic numbers.
-
-### Errors
-
-- Add variants to `OpalError` in `errors.rs`. Do NOT use `TemplateError`.
-- Provide a `#[msg("...")]` for every variant.
-
-### Math
-
-- Use `checked_*` operations. Never use raw `+`, `-`, `*` on token amounts or timestamps.
-
-## TypeScript
-
-### Tests
-
-- Use `AnchorProvider.env()` for the provider (set by `anchor test`).
-- Use `anchor.workspace.Opal` for the typed program.
-- Use `bun:test` (`describe`, `it`, `expect`, `beforeAll`).
-- Keep tests flat — nested `describe` blocks can interleave with singleton state and cause ordering bugs.
-
----
-
-# Development Workflows
-
-## Build
-
-```bash
-# Build the Rust program + generate IDL and TypeScript types
-anchor build
-```
-
-**Build order:** `anchor build` writes `target/idl/opal.json` and `target/types/opal.ts`. Tests import from `target/` (see `tests/opal.test.ts`). The web app does not consume Anchor artifacts yet.
-
-## Test
-
-```bash
-# Full integration-test suite on localnet (builds with mock-llm via Anchor.toml)
-# (auto-starts validator, deploys program, runs tests, stops validator)
-anchor test
-
-# Or explicitly:
-bun run test:local
-```
-
-**No Rust unit tests.** `cargo test -p opal` only runs the empty lib test harness.
-All coverage is in `tests/opal.test.ts`.
-
-## Lint / Format
-
-```bash
-# Check formatting
-bun run format
-
-# Fix formatting
-bun run format:fix
-```
-
-## Deploy
-
-Not documented yet. Devnet/mainnet instructions will be added when targets are chosen.
-
----
-
-# Architecture Notes
-
-## State Machine
-
-```
-Asserted → (disputed?) PendingLlm → AssertedLlm → (challenged?) PendingVote → Voting → Resolved
-                    ↑                                                              ↑
-                    └──────────────── finalize_undisputed ─────────────────────────┘
-```
-
-Undisputed path: `Asserted` → `Resolved(True)` via `finalize_undisputed`.
-
-## Account Types
-
-| Account               | Role                                                                    |
-| --------------------- | ----------------------------------------------------------------------- |
-| `AssertionAccount`    | Main assertion — statement, state, deadlines, dispute pointers, outcome |
-| `ProtocolConfig`      | Singleton PDA — authority, mint, treasury, window lengths, fee ratios   |
-| `LlmDisputeAccount`   | First dispute — disputer, bond, settlement_resolution                   |
-| `LlmResolutionRound`  | LLM round — Switchboard fields (placeholder), outcome, deadlines        |
-| `VoteDisputeAccount`  | Second dispute — challenges LLM outcome                                 |
-| `VoteResolutionRound` | Vote round — MagicBlock fields (placeholder), voting deadlines, tally   |
-
-All state accounts are **zero-copy** with `#[repr(C, packed)]`.
-
-## Key Design Decisions
-
-### PDA derivation
-
-- `ProtocolConfig` is a singleton: seeds = `[b"protocol_config"]`.
-- `AssertionAccount` uses a **caller-supplied** `assertion_id`: seeds = `[b"assertion", assertion_id.as_ref()]`. This lets clients pre-compute PDAs off-chain.
-- Dispute and round PDAs derive from the `assertion` account key, not the `assertion_id`.
-
-### LLM resolution (Switchboard council)
-
-- **`set_council_feeds`:** Authority sets three distinct Switchboard pull feed pubkeys on `ProtocolConfig`. Required before `dispute_assertion` (`CouncilFeedsNotConfigured` otherwise).
-- **`dispute_assertion`:** Copies `protocol_config.council_feeds` into `LlmResolutionRound.council_feeds`.
-- **`submit_llm_resolution`:** Permissionless; reads all three feeds, majority-votes outcome codes (`0`–`3`), sets `AssertedLLM`. Uses `switchboard-on-demand` in the program.
-- **`submit_mock_llm_resolution`:** Only with `mock-llm` feature (enabled in `Anchor.toml` for local tests). Authority-gated; skips feed reads.
-
-### Placeholder integrations
-
-- **MagicBlock voting:** `VoteResolutionRound` reserves MagicBlock fields (validator, permission account, delegated vote state) but no ER delegation is performed. `open_vote` sets `delegated = BOOL_TRUE` as a no-op placeholder. `open_vote` auth policy is **TBD** — currently permissionless for liveness, but this may change.
-
-### Economic model (current)
-
-- All bonds, fees, and payouts are in the protocol-configured stablecoin.
-- `voter_reward_share_bps` exists in config but voters are not yet implemented.
-- The vote disputer currently has **no positive incentive** beyond bond return; `vote_disputer_reward_share_bps` is reserved for future tokenomics.
-
-### Known quirks
-
-- **`InvalidPusdMint` was removed.** The protocol supports any USD-pegged stablecoin.
-  Mint validation in `create_assertion` uses `Unauthorized` to reject mismatched mints.
-  A future PR will rename all `pusd` fields to `usd`.
-- **Deployer auth is commented out.** `initialize_protocol_config` has a commented-out
-  `require!(authority.key() == crate::ID)` check so tests can init with any keypair.
-  Uncomment before mainnet.
+- **Think first** — state your assumptions; if multiple interpretations exist, surface them rather than picking silently; if something's unclear, stop and ask.
+- **Simplest thing that works** — no speculative features, abstractions, configurability, or error handling for impossible cases. If you wrote 200 lines and it could be 50, rewrite it.
+- **Surgical changes** — touch only what the task needs; match surrounding style; don't refactor or reformat unrelated code; clean up only the orphans your own change creates.
+- **Verify against a goal** — turn the task into a checkable outcome (a failing test, a passing command) and loop until it's met.
