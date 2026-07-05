@@ -6,6 +6,8 @@ import { useState } from 'react';
 
 import { filterAssertionsByAddress } from '@/data/assertion';
 import { computeAssertionStats } from '@/lib/assertion-stats';
+import { useAssertions } from '@/lib/assertion-store';
+import type { AssertionAccount } from '@/types';
 
 type EarningType = 'ALL' | 'DISPUTE_WIN' | 'VOTE_REWARD' | 'BOND_RETURN';
 
@@ -16,33 +18,35 @@ interface Earning {
   type: Exclude<EarningType, 'ALL'>;
   amount: string;
   date: string;
+  timestamp: number;
 }
 
-// Derive earnings from assertions
-function deriveEarnings(assertions: any[]): Earning[] {
+function deriveEarnings(assertions: AssertionAccount[]): Earning[] {
   const earnings: Earning[] = [];
 
-  assertions.forEach((assertion) => {
+  for (const assertion of assertions) {
     // Dispute wins
-    if (assertion.llmDispute?.settled && assertion.llmDispute?.disputeCorrect) {
+    if (assertion.llmDispute?.settled && assertion.llmDispute.disputeCorrect) {
       earnings.push({
         id: `${assertion.id}-llm-win`,
         assertionId: assertion.id,
         statement: assertion.statement,
         type: 'DISPUTE_WIN',
-        amount: `+${assertion.llmDispute.bondAmountPUSD} PUSD`,
+        amount: `+${assertion.llmDispute.bondAmountPUSD} USDC`,
         date: new Date(assertion.llmDispute.createdAt).toLocaleDateString(),
+        timestamp: new Date(assertion.llmDispute.createdAt).getTime(),
       });
     }
 
-    if (assertion.voteDispute?.settled && assertion.voteDispute?.disputeCorrect) {
+    if (assertion.voteDispute?.settled && assertion.voteDispute.disputeCorrect) {
       earnings.push({
         id: `${assertion.id}-vote-win`,
         assertionId: assertion.id,
         statement: assertion.statement,
         type: 'DISPUTE_WIN',
-        amount: `+${assertion.voteDispute.bondAmountPUSD} PUSD`,
+        amount: `+${assertion.voteDispute.bondAmountPUSD} USDC`,
         date: new Date(assertion.voteDispute.createdAt).toLocaleDateString(),
+        timestamp: new Date(assertion.voteDispute.createdAt).getTime(),
       });
     }
 
@@ -53,25 +57,28 @@ function deriveEarnings(assertions: any[]): Earning[] {
         assertionId: assertion.id,
         statement: assertion.statement,
         type: 'VOTE_REWARD',
-        amount: `+${Math.floor(Number(assertion.voteResolutionRound.totalValidWeight / 100n))} OPAL`,
+        amount: `+${Number(assertion.voteResolutionRound.totalValidWeight / 100n)} OPAL`,
         date: new Date(assertion.createdAt).toLocaleDateString(),
+        timestamp: new Date(assertion.createdAt).getTime(),
       });
     }
 
     // Bond returns for resolved assertions
     if (assertion.state === 'Resolved') {
+      const returnedAt = assertion.finalizedAt || assertion.createdAt;
       earnings.push({
         id: `${assertion.id}-bond-return`,
         assertionId: assertion.id,
         statement: assertion.statement,
         type: 'BOND_RETURN',
-        amount: `+${assertion.bondAmountPUSD} PUSD`,
-        date: new Date(assertion.finalizedAt || assertion.createdAt).toLocaleDateString(),
+        amount: `+${assertion.bondAmountPUSD} USDC`,
+        date: new Date(returnedAt).toLocaleDateString(),
+        timestamp: new Date(returnedAt).getTime(),
       });
     }
-  });
+  }
 
-  return earnings.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  return earnings.sort((a, b) => b.timestamp - a.timestamp);
 }
 
 const FILTERS: { label: string; value: EarningType }[] = [
@@ -93,13 +100,13 @@ const TYPE_META: Record<
 export default function EarningsPage() {
   const params = useParams<{ address: string }>();
   const address = Array.isArray(params?.address) ? params.address[0] : params?.address;
-  const assertions = filterAssertionsByAddress(address);
+  // Read from the client store so earnings from this session's activity show up.
+  const assertions = filterAssertionsByAddress(address, useAssertions());
   const [filter, setFilter] = useState<EarningType>('ALL');
   const [search, setSearch] = useState('');
 
-  const earnings = deriveEarnings(assertions as any);
-
-  const stats = computeAssertionStats(assertions as any);
+  const earnings = deriveEarnings(assertions);
+  const stats = computeAssertionStats(assertions);
 
   const rows = earnings.filter((e) => {
     const matchFilter = filter === 'ALL' || e.type === filter;
@@ -110,30 +117,30 @@ export default function EarningsPage() {
   return (
     <div className="flex flex-col gap-6 px-4 py-6 sm:px-6 sm:py-8">
       {/* consistent slim status bar */}
-      <div className="border-muted-foreground/20 flex items-center gap-6 border-b py-3 text-xs tracking-widest uppercase">
+      <div className="border-muted-foreground/20 flex items-center gap-6 border-b py-3 font-mono text-xs tracking-widest uppercase">
         <div className="flex items-center gap-2">
           <div className="text-muted-foreground">Total Assertions</div>
-          <div className="text-primary text-xs font-semibold">{stats.totalAssertions}</div>
+          <div className="text-primary tabular-nums">{stats.totalAssertions}</div>
         </div>
 
         <div className="flex items-center gap-2">
           <div className="text-muted-foreground">Disputes</div>
-          <div className="text-primary text-xs font-semibold">{stats.totalDisputes}</div>
+          <div className="text-primary tabular-nums">{stats.totalDisputes}</div>
         </div>
 
         <div className="flex items-center gap-2">
           <div className="text-muted-foreground">Active</div>
-          <div className="text-primary text-xs font-semibold">{stats.activeAssertions}</div>
+          <div className="text-primary tabular-nums">{stats.activeAssertions}</div>
         </div>
 
         <div className="ml-auto flex items-center gap-2">
-          <div className="text-muted-foreground">Bond PUSD</div>
-          <div className="text-xs font-semibold">{stats.totalBondPUSD}</div>
+          <div className="text-muted-foreground">Bonded USDC</div>
+          <div className="tabular-nums">{stats.totalBondPUSD}</div>
         </div>
 
         <div className="flex items-center gap-2">
           <div className="text-muted-foreground">OPAL Locked</div>
-          <div className="text-xs font-semibold">
+          <div className="tabular-nums">
             {Intl.NumberFormat().format(stats.totalValidWeight || 0)}
           </div>
         </div>
@@ -152,7 +159,7 @@ export default function EarningsPage() {
               <button
                 key={f.value}
                 onClick={() => setFilter(f.value)}
-                className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs tracking-widest uppercase transition-colors ${
+                className={`flex items-center gap-1.5 rounded-none px-3 py-1.5 font-mono text-xs tracking-widest uppercase transition-colors ${
                   isActive
                     ? 'bg-primary/10 text-primary ring-primary/20 ring-1'
                     : 'text-muted-foreground hover:bg-muted-foreground/5 hover:text-foreground'
@@ -160,7 +167,7 @@ export default function EarningsPage() {
               >
                 {f.label}
                 <span
-                  className={`rounded-sm px-1 text-xs ${isActive ? 'bg-primary/20 text-primary' : 'bg-muted-foreground/10 text-muted-foreground'}`}
+                  className={`px-1 font-mono text-xs tabular-nums ${isActive ? 'bg-primary/20 text-primary' : 'bg-muted-foreground/10 text-muted-foreground'}`}
                 >
                   {count}
                 </span>
@@ -174,7 +181,7 @@ export default function EarningsPage() {
           placeholder="SEARCH..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="bg-muted/10 placeholder:text-muted-foreground/40 focus:ring-primary/40 h-8 w-48 rounded-md px-3 text-xs tracking-wider uppercase focus:ring-1 focus:outline-none"
+          className="bg-muted/10 border-muted-foreground/20 placeholder:text-muted-foreground/40 focus:ring-primary/40 h-8 w-48 rounded-none border px-3 font-mono text-xs tracking-widest uppercase focus:ring-1 focus:outline-none"
         />
       </div>
 
@@ -184,16 +191,16 @@ export default function EarningsPage() {
           <table className="w-full border-collapse">
             <thead>
               <tr className="border-muted-foreground/20 border-b text-left">
-                <th className="text-muted-foreground w-[50%] px-5 py-3 text-xs font-medium tracking-widest uppercase">
+                <th className="text-muted-foreground w-[50%] px-5 py-3 font-mono text-xs font-normal tracking-widest uppercase">
                   Assertion
                 </th>
-                <th className="text-muted-foreground px-5 py-3 text-xs font-medium tracking-widest uppercase">
+                <th className="text-muted-foreground px-5 py-3 font-mono text-xs font-normal tracking-widest uppercase">
                   Type
                 </th>
-                <th className="text-muted-foreground px-5 py-3 text-xs font-medium tracking-widest uppercase">
+                <th className="text-muted-foreground px-5 py-3 font-mono text-xs font-normal tracking-widest uppercase">
                   Amount
                 </th>
-                <th className="text-muted-foreground px-5 py-3 text-xs font-medium tracking-widest uppercase">
+                <th className="text-muted-foreground px-5 py-3 font-mono text-xs font-normal tracking-widest uppercase">
                   Date
                 </th>
               </tr>
@@ -204,7 +211,7 @@ export default function EarningsPage() {
                 <tr>
                   <td
                     colSpan={4}
-                    className="text-muted-foreground/30 py-16 text-center text-xs uppercase"
+                    className="text-muted-foreground/40 py-16 text-center font-mono text-xs tracking-widest uppercase"
                   >
                     No earnings found
                   </td>
@@ -223,26 +230,26 @@ export default function EarningsPage() {
                           className="grid grid-cols-[50%_1fr_1fr_1fr] items-center"
                         >
                           {/* statement */}
-                          <div className="group-hover:text-primary line-clamp-1 px-5 py-4 text-xs tracking-tight uppercase transition-colors">
+                          <div className="group-hover:text-primary line-clamp-1 px-5 py-4 text-sm transition-colors">
                             {row.statement}
                           </div>
 
                           {/* type badge */}
                           <div className="px-5 py-4">
                             <span
-                              className={`border px-2 py-0.5 text-xs tracking-widest uppercase ${border} ${text}`}
+                              className={`border px-2 py-0.5 font-mono text-xs tracking-widest uppercase ${border} ${text}`}
                             >
                               {label}
                             </span>
                           </div>
 
                           {/* amount */}
-                          <div className="text-primary px-5 py-4 text-xs font-semibold uppercase">
+                          <div className="text-primary px-5 py-4 font-mono text-xs tracking-widest uppercase tabular-nums">
                             {row.amount}
                           </div>
 
                           {/* date */}
-                          <div className="text-muted-foreground px-5 py-4 text-xs uppercase">
+                          <div className="text-muted-foreground px-5 py-4 font-mono text-xs tabular-nums">
                             {row.date}
                           </div>
                         </Link>

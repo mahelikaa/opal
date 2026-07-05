@@ -81,17 +81,14 @@ export default function DisputeAssertion() {
   if (!windowOpen) {
     return (
       <Container className="border-muted-foreground/50 flex min-h-screen flex-col items-center justify-center gap-4 border-x border-dashed px-4">
-        <p className="text-base font-medium tracking-wide uppercase">
-          This assertion cannot be disputed right now.
-        </p>
-        <p className="text-muted-foreground text-sm">
+        <h1 className="text-xl uppercase md:text-2xl">Dispute Unavailable</h1>
+        <p className="text-muted-foreground text-sm leading-relaxed">
           {mode === null
-            ? 'Its current state does not accept disputes or challenges.'
+            ? 'This assertion’s current state does not accept disputes or challenges.'
             : 'The dispute window has expired.'}
         </p>
         <Button
           variant="outline"
-          className="rounded-none uppercase"
           nativeButton={false}
           render={<Link href={`/assertion/browse/${idStr}`} />}
         >
@@ -135,7 +132,7 @@ export default function DisputeAssertion() {
     ? `Sign in to ${actionLabel}`
     : !reasonValid
       ? 'Enter a Reason to Continue'
-      : `Stake ${bond} PUSD & ${actionLabel}`;
+      : `Stake ${bond} USDC & ${actionLabel}`;
 
   const toggle = (s: Section) => setOpen((prev) => (prev === s ? 'reason' : s));
 
@@ -187,7 +184,7 @@ export default function DisputeAssertion() {
                 )}
               </AnimatePresence>
               <span
-                className={`text-xs tabular-nums md:text-xs ${
+                className={`font-mono text-xs tabular-nums ${
                   reason.length > MAX_REASON_CHARS * 0.9
                     ? 'text-amber-400'
                     : 'text-muted-foreground/85'
@@ -217,7 +214,7 @@ export default function DisputeAssertion() {
 
                 <SummaryMeta label="Window Closes" value={getTimeRemaining(deadline)} />
 
-                <SummaryMeta label="Required Bond" value={`${bond} PUSD`} />
+                <SummaryMeta label="Required Bond" value={`${bond} USDC`} />
               </div>
 
               <p className="text-muted-foreground/85 text-xs">
@@ -232,7 +229,7 @@ export default function DisputeAssertion() {
             label="Stake Summary"
             open={open === 'summary'}
             onClick={() => toggle('summary')}
-            peek={`${bond} PUSD · challenging ${challengedOutcome}`}
+            peek={`${bond} USDC · challenging ${challengedOutcome}`}
             showShortcut={open === 'summary'}
             shortcutHint="Ready to submit?"
           />
@@ -245,11 +242,11 @@ export default function DisputeAssertion() {
               </div>
 
               <div className="mx-auto mt-6 grid w-full max-w-3xl grid-cols-2 gap-4 md:grid-cols-4">
-                <SummaryMeta label="Dispute Bond" value={`${bond} PUSD`} accent />
+                <SummaryMeta label="Dispute Bond" value={`${bond} USDC`} accent />
 
                 <SummaryMeta label="Challenging" value={challengedOutcome} />
 
-                <SummaryMeta label="If Correct" value={`+${bond} PUSD (minus fee)`} />
+                <SummaryMeta label="If Correct" value={`+${bond} USDC (minus fee)`} />
 
                 <SummaryMeta label="If Incorrect" value="Bond Slashed" />
               </div>
@@ -268,7 +265,7 @@ export default function DisputeAssertion() {
                 }
                 handleSubmit();
               }}
-              className={`w-full py-3 text-xs tracking-widest uppercase transition-colors ${
+              className={`w-full py-3 font-mono text-xs tracking-widest uppercase transition-colors ${
                 buttonDisabled
                   ? 'bg-muted/30 text-muted-foreground/25 border-muted-foreground/10 cursor-not-allowed border'
                   : 'bg-destructive hover:bg-destructive/90 cursor-pointer text-white'
@@ -319,10 +316,14 @@ function SummaryMeta({
 }) {
   return (
     <div className="min-w-0">
-      <div className="text-muted-foreground/75 text-xs tracking-[0.18em] uppercase">
+      <div className="text-muted-foreground/75 font-mono text-[10px] tracking-[0.2em] uppercase">
         {label}
       </div>
-      <div className={`mt-1 text-sm ${accent ? 'text-primary' : 'text-foreground'}`}>{value}</div>
+      <div
+        className={`mt-1 font-mono text-sm tabular-nums ${accent ? 'text-primary' : 'text-foreground'}`}
+      >
+        {value}
+      </div>
     </div>
   );
 }

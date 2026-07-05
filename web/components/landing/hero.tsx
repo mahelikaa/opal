@@ -1,8 +1,6 @@
 'use client';
 import Link from 'next/link';
 
-import { motion as m } from 'motion/react';
-
 import { Button } from '../ui/button';
 import HeroBackground from './background';
 import CornerMarkers from '../common/corner-markers';
@@ -13,13 +11,13 @@ export default function Hero() {
       <section className="relative overflow-x-clip px-4">
         <div className="relative flex min-h-[90vh] translate-y-8 flex-col items-center justify-center gap-10 py-12 md:py-16">
           <div className="flex max-w-4xl flex-col items-center space-y-4">
-            <p className="text-primary text-xs font-semibold tracking-[0.35em] uppercase">
+            <p className="text-primary font-mono text-xs tracking-[0.3em] uppercase">
               Solana-native optimistic oracle
             </p>
-            <h1 className="mt-4 text-center text-4xl font-bold tracking-tighter text-balance uppercase md:text-7xl">
+            <h1 className="mt-4 text-center text-3xl text-balance uppercase sm:text-4xl md:text-6xl">
               Stake Your <span className="text-primary">Truth</span>
             </h1>
-            <p className="text-muted-foreground max-w-3xl text-center text-sm leading-7 font-medium text-balance uppercase md:text-sm">
+            <p className="text-muted-foreground max-w-xl text-center text-sm leading-relaxed text-balance md:text-base">
               Opal resolves assertions through a default optimistic answer, a first LLM resolution
               round, and a final private voting escalation.
             </p>

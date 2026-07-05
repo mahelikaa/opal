@@ -63,8 +63,10 @@ export default function ParamsSection({
               {/* Dispute window */}
               <div className="flex flex-col justify-center gap-4">
                 <div className="flex items-center gap-2">
-                  <ClockIcon size={18} className="text-muted-foreground/50" />
-                  <span className="text-muted-foreground/50 text-sm">Dispute window</span>
+                  <ClockIcon size={16} className="text-muted-foreground/50" />
+                  <span className="text-muted-foreground/50 font-mono text-xs tracking-widest uppercase">
+                    Dispute Window
+                  </span>
                 </div>
 
                 <div className="flex flex-wrap gap-2">
@@ -73,7 +75,6 @@ export default function ParamsSection({
                       key={w.value}
                       onClick={() => setWindow(w)}
                       variant={window_?.value === w.value ? 'default' : 'outline'}
-                      className="rounded-none text-sm uppercase"
                     >
                       {w.label}
                     </Button>
@@ -89,23 +90,25 @@ export default function ParamsSection({
               <div className="border-muted-foreground/20 flex flex-col justify-center gap-6 border-t pt-6 md:border-t-0 md:border-l md:pt-0 md:pl-8">
                 <div className="flex flex-col gap-2">
                   <div className="flex items-center gap-2">
-                    <span className="text-muted-foreground text-xs uppercase">Assertion Bond</span>
-                    <span className="text-muted-foreground/60 border-muted-foreground/30 border px-1.5 py-0.5 text-xs tracking-wider uppercase">
+                    <span className="text-muted-foreground font-mono text-xs tracking-widest uppercase">
+                      Assertion Bond
+                    </span>
+                    <span className="text-muted-foreground/60 border-muted-foreground/30 border px-1.5 py-0.5 font-mono text-[10px] tracking-widest uppercase">
                       Fixed
                     </span>
                   </div>
 
                   <div className="flex items-baseline gap-2">
-                    <span className="text-primary text-4xl font-semibold tracking-tight tabular-nums">
-                      {bond}
-                    </span>
-                    <span className="text-primary/60 text-base uppercase">PUSD</span>
+                    <span className="text-primary font-mono text-4xl tabular-nums">{bond}</span>
+                    <span className="text-primary/60 font-mono text-base uppercase">USDC</span>
                   </div>
                 </div>
 
                 <div className="flex flex-col gap-1">
-                  <span className="text-muted-foreground text-xs uppercase">Expires</span>
-                  <span className="text-sm font-semibold uppercase">{expiry}</span>
+                  <span className="text-muted-foreground font-mono text-xs tracking-widest uppercase">
+                    Expires
+                  </span>
+                  <span className="font-mono text-sm uppercase tabular-nums">{expiry}</span>
                   <span className="text-muted-foreground/85 text-xs">
                     {formatRelativeExpiry(expiry)}
                   </span>

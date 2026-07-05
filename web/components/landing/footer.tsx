@@ -11,7 +11,7 @@ export default function Footer() {
       {/* Watermark */}
       <span
         aria-hidden
-        className="text-foreground/4 pointer-events-none absolute -bottom-10 left-1/2 -translate-x-1/2 text-[11rem] leading-none font-bold tracking-tighter uppercase select-none md:text-[16rem]"
+        className="text-foreground/4 font-heading pointer-events-none absolute -bottom-10 left-1/2 -translate-x-1/2 text-[9rem] leading-none uppercase select-none md:text-[14rem]"
       >
         Opal
       </span>
@@ -20,20 +20,18 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-3">
           {/* Brand */}
           <div className="flex flex-col gap-3 px-4 py-10">
-            <span className="text-primary text-[10px] font-semibold tracking-[0.4em] uppercase">
+            <span className="text-primary font-mono text-[10px] tracking-[0.3em] uppercase">
               Opal
             </span>
-            <h2 className="text-2xl font-semibold tracking-tight uppercase">
-              Resolution you can rely on
-            </h2>
-            <p className="text-muted-foreground max-w-xs text-xs leading-relaxed uppercase">
+            <h2 className="text-xl uppercase">Resolution you can rely on</h2>
+            <p className="text-muted-foreground max-w-xs text-sm leading-relaxed">
               A Solana-native optimistic oracle for natural-language statements.
             </p>
           </div>
 
           {/* Protocol */}
           <div className="border-muted-foreground/25 flex flex-col gap-4 border-t px-4 py-10 md:border-t-0 md:border-l md:px-10">
-            <span className="text-muted-foreground text-[10px] tracking-[0.3em] uppercase">
+            <span className="text-muted-foreground font-mono text-[10px] tracking-[0.3em] uppercase">
               Protocol
             </span>
             <nav className="flex flex-col gap-3">
@@ -41,7 +39,7 @@ export default function Footer() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="text-foreground/80 hover:text-primary group flex items-center gap-2 text-sm tracking-wider uppercase transition-colors"
+                  className="text-foreground/80 hover:text-primary group flex items-center gap-2 font-mono text-xs tracking-widest uppercase transition-colors"
                 >
                   <span className="bg-muted-foreground/40 group-hover:bg-primary size-1 transition-colors" />
                   {link.label}
@@ -52,21 +50,21 @@ export default function Footer() {
 
           {/* Community */}
           <div className="border-muted-foreground/25 flex flex-col gap-4 border-t px-4 py-10 md:border-t-0 md:border-l md:px-10">
-            <span className="text-muted-foreground text-[10px] tracking-[0.3em] uppercase">
+            <span className="text-muted-foreground font-mono text-[10px] tracking-[0.3em] uppercase">
               Follow
             </span>
             <a
               href="https://x.com/opaldotsol"
               target="_blank"
               rel="noreferrer"
-              className="text-primary hover:text-primary/80 w-fit text-sm tracking-[0.2em] uppercase underline-offset-8 transition-colors hover:underline"
+              className="text-primary hover:text-primary/80 w-fit font-mono text-xs tracking-[0.2em] uppercase underline-offset-8 transition-colors hover:underline"
             >
               X / @opaldotsol
             </a>
           </div>
         </div>
 
-        <div className="border-muted-foreground/25 flex flex-col items-start justify-between gap-3 border-t px-4 py-5 text-xs uppercase sm:flex-row sm:items-center">
+        <div className="border-muted-foreground/25 flex flex-col items-start justify-between gap-3 border-t px-4 py-5 font-mono text-[11px] tracking-widest uppercase sm:flex-row sm:items-center">
           <span className="text-muted-foreground">Built for verifiable outcomes</span>
 
           <span className="text-muted-foreground flex items-center gap-2 tracking-wider">

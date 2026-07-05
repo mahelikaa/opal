@@ -12,7 +12,7 @@ export default function Timeline({ statement }: { statement: AssertionAccount | 
     {
       date: statement.createdAt,
       title: 'ASSERTED',
-      description: 'optimistic truth activated',
+      description: 'Optimistic truth activated',
       color: 'bg-orange-400',
       active: true,
     },
@@ -22,7 +22,7 @@ export default function Timeline({ statement }: { statement: AssertionAccount | 
           {
             date: statement.llmDispute.createdAt,
             title: 'DISPUTED',
-            description: 'llm dispute submitted',
+            description: 'LLM dispute submitted',
             color: 'bg-red-400',
             active: true,
           },
@@ -34,7 +34,7 @@ export default function Timeline({ statement }: { statement: AssertionAccount | 
           {
             date: statement.llmResolutionRound.resolvedAt,
             title: 'LLM RESOLUTION',
-            description: `proposed ${statement.llmResolutionRound.outcome}`,
+            description: `Proposed ${statement.llmResolutionRound.outcome}`,
             color: 'bg-yellow-400',
             active: true,
           },
@@ -46,7 +46,7 @@ export default function Timeline({ statement }: { statement: AssertionAccount | 
           {
             date: statement.voteDispute.createdAt,
             title: 'VOTE CHALLENGE',
-            description: `challenged ${statement.voteDispute.challengedLLMResolution}`,
+            description: `Challenged ${statement.voteDispute.challengedLLMResolution}`,
             color: 'bg-purple-400',
             active: true,
           },
@@ -60,7 +60,7 @@ export default function Timeline({ statement }: { statement: AssertionAccount | 
             title: 'VOTING OPEN',
             description: `${Number(
               statement.voteResolutionRound.totalValidWeight
-            ).toLocaleString()} opal locked`,
+            ).toLocaleString()} vote weight locked`,
             color: 'bg-blue-400',
             active: true,
           },
@@ -71,8 +71,8 @@ export default function Timeline({ statement }: { statement: AssertionAccount | 
       date: statement.finalizedAt || statement.livenessDeadline,
       title: statement.finalizedAt ? 'FINALIZED' : 'PENDING FINALIZATION',
       description: statement.finalizedAt
-        ? `resolved ${statement.outcome}`
-        : 'awaiting next resolution phase',
+        ? `Resolved ${statement.outcome}`
+        : 'Awaiting next resolution phase',
       color: statement.finalizedAt
         ? statement.outcome === 'True'
           ? 'bg-green-400'
@@ -87,7 +87,7 @@ export default function Timeline({ statement }: { statement: AssertionAccount | 
   return (
     <div className="w-full">
       <div className="border-muted-foreground/50 bg-background/85 border px-6 py-4 shadow-lg backdrop-blur-md">
-        <span className="text-muted-foreground/75 text-xs tracking-[0.25em] uppercase">
+        <span className="text-muted-foreground/75 font-mono text-xs tracking-[0.25em] uppercase">
           Lifecycle
         </span>
 
@@ -114,7 +114,7 @@ export default function Timeline({ statement }: { statement: AssertionAccount | 
                 </div>
 
                 <div className="flex flex-col gap-0.5 pr-6">
-                  <span className="text-muted-foreground text-xs whitespace-nowrap uppercase">
+                  <span className="text-muted-foreground font-mono text-[10px] whitespace-nowrap uppercase tabular-nums">
                     {event.date
                       ? new Date(event.date).toLocaleDateString('en-US', {
                           day: '2-digit',
@@ -126,14 +126,14 @@ export default function Timeline({ statement }: { statement: AssertionAccount | 
 
                   <span
                     className={cn(
-                      'text-xs font-semibold whitespace-nowrap uppercase',
+                      'font-mono text-xs tracking-widest whitespace-nowrap uppercase',
                       event.active ? 'text-foreground' : 'text-muted-foreground'
                     )}
                   >
                     {event.title}
                   </span>
 
-                  <span className="text-muted-foreground text-xs leading-relaxed uppercase">
+                  <span className="text-muted-foreground text-xs leading-relaxed">
                     {event.description}
                   </span>
                 </div>

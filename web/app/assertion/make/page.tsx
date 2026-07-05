@@ -140,7 +140,7 @@ export default function MakeAssertion() {
     ? 'Sign in to Assert'
     : !statement.length || statement.length < 10 || statement.endsWith('?')
       ? 'Stake to Confirm'
-      : `Stake ${bond} PUSD and Assert`;
+      : `Stake ${bond} USDC and Assert`;
 
   return (
     <Container className="border-muted-foreground/50 relative flex h-screen flex-col overflow-hidden border-x border-dashed px-4 pt-18 pb-4">
@@ -173,7 +173,7 @@ export default function MakeAssertion() {
             showShortcut={open === 'params'}
             shortcutHint="Ctrl+Enter"
             onClick={() => toggle('params')}
-            peek={`${bond} PUSD · ${window_.label}`}
+            peek={`${bond} USDC · ${window_.label}`}
           />
           <ParamsSection
             open={open === 'params'}
@@ -238,7 +238,7 @@ export default function MakeAssertion() {
                 }
                 handleSubmit();
               }}
-              className={`w-full py-3 text-xs tracking-widest uppercase transition-colors ${
+              className={`w-full py-3 font-mono text-xs tracking-widest uppercase transition-colors ${
                 buttonDisabled
                   ? 'bg-muted/30 text-muted-foreground/25 border-muted-foreground/10 cursor-not-allowed border'
                   : 'bg-primary hover:bg-primary/90 cursor-pointer text-black'

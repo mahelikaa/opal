@@ -113,10 +113,10 @@ export default function Assertion() {
       <div className="flex-1 px-4 pt-24 pb-8">
         {assertions.length === 0 ? (
           <div className="text-muted-foreground flex h-[70vh] flex-col items-center justify-center gap-2 text-center">
-            <p className="text-base font-medium tracking-wide uppercase">
-              No assertions match these filters.
+            <p className="font-mono text-xs tracking-widest uppercase">
+              No assertions match these filters
             </p>
-            <p className="text-sm">
+            <p className="text-sm leading-relaxed">
               Clear one of the filters or pick a different stage and quick-filter combination.
             </p>
           </div>

@@ -6,6 +6,8 @@ import { useState } from 'react';
 
 import { filterAssertionsByAddress } from '@/data/assertion';
 import { computeAssertionStats } from '@/lib/assertion-stats';
+import { useAssertions } from '@/lib/assertion-store';
+import type { AssertionAccount, LLMDisputeAccount, VoteDisputeAccount } from '@/types';
 
 type DisputeStatus = 'ALL' | 'LLM' | 'VOTING' | 'WON' | 'LOST';
 
@@ -15,54 +17,61 @@ interface DisputeView {
   statement: string;
   type: 'LLM' | 'VOTE';
   status: Exclude<DisputeStatus, 'ALL'>;
-  opalStaked: string;
-  pnl: string;
+  bondUSDC: number;
+  pnl: string | null;
   date: string;
+  timestamp: number;
 }
 
-// Derive disputes from assertions
-function deriveDisputes(assertions: any[]): DisputeView[] {
+function disputeStatus(
+  dispute: LLMDisputeAccount | VoteDisputeAccount,
+  pending: 'LLM' | 'VOTING'
+): Exclude<DisputeStatus, 'ALL'> {
+  if (!dispute.settled) return pending;
+  return dispute.disputeCorrect ? 'WON' : 'LOST';
+}
+
+function disputePnl(dispute: LLMDisputeAccount | VoteDisputeAccount): string | null {
+  if (!dispute.settled) return null;
+  return dispute.disputeCorrect
+    ? `+${dispute.bondAmountPUSD} USDC`
+    : `-${dispute.bondAmountPUSD} USDC`;
+}
+
+function deriveDisputes(assertions: AssertionAccount[]): DisputeView[] {
   const disputes: DisputeView[] = [];
 
-  assertions.forEach((a) => {
-    // LLM disputes
+  for (const a of assertions) {
     if (a.llmDispute) {
-      const status = a.llmDispute.settled ? (a.llmDispute.disputeCorrect ? 'WON' : 'LOST') : 'LLM';
-
       disputes.push({
         id: `${a.id}-llm`,
         assertionId: a.id,
         statement: a.statement,
         type: 'LLM',
-        status: status as Exclude<DisputeStatus, 'ALL'>,
-        opalStaked: a.llmDispute.bondAmountPUSD.toString(),
-        pnl: a.llmDispute.disputeCorrect ? `+${a.llmDispute.bondAmountPUSD}` : 'Loss',
+        status: disputeStatus(a.llmDispute, 'LLM'),
+        bondUSDC: a.llmDispute.bondAmountPUSD,
+        pnl: disputePnl(a.llmDispute),
         date: new Date(a.llmDispute.createdAt).toLocaleDateString(),
+        timestamp: new Date(a.llmDispute.createdAt).getTime(),
       });
     }
 
-    // Vote disputes
     if (a.voteDispute) {
-      const status = a.voteDispute.settled
-        ? a.voteDispute.disputeCorrect
-          ? 'WON'
-          : 'LOST'
-        : 'VOTING';
-
       disputes.push({
         id: `${a.id}-vote`,
         assertionId: a.id,
         statement: a.statement,
         type: 'VOTE',
-        status: status as Exclude<DisputeStatus, 'ALL'>,
-        opalStaked: a.voteDispute.bondAmountPUSD.toString(),
-        pnl: a.voteDispute.disputeCorrect ? `+${a.voteDispute.bondAmountPUSD}` : 'Loss',
+        status: disputeStatus(a.voteDispute, 'VOTING'),
+        bondUSDC: a.voteDispute.bondAmountPUSD,
+        pnl: disputePnl(a.voteDispute),
         date: new Date(a.voteDispute.createdAt).toLocaleDateString(),
+        timestamp: new Date(a.voteDispute.createdAt).getTime(),
       });
     }
-  });
+  }
 
-  return disputes.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  return disputes.sort((a, b) => b.timestamp - a.timestamp);
 }
 
 const FILTERS: { label: string; value: DisputeStatus }[] = [
@@ -86,12 +95,13 @@ const STATUS_META: Record<
 export default function DisputesPage() {
   const params = useParams<{ address: string }>();
   const address = Array.isArray(params?.address) ? params.address[0] : params?.address;
-  const assertions = filterAssertionsByAddress(address);
+  // Read from the client store so disputes filed this session show up.
+  const assertions = filterAssertionsByAddress(address, useAssertions());
   const [filter, setFilter] = useState<DisputeStatus>('ALL');
   const [search, setSearch] = useState('');
 
-  const disputes = deriveDisputes(assertions as any);
-  const stats = computeAssertionStats(assertions as any);
+  const disputes = deriveDisputes(assertions);
+  const stats = computeAssertionStats(assertions);
   const rows = disputes.filter((d) => {
     const matchFilter = filter === 'ALL' || d.status === filter;
     const matchSearch = !search || d.statement.toLowerCase().includes(search.toLowerCase());
@@ -106,30 +116,30 @@ export default function DisputesPage() {
   return (
     <div className="flex flex-col gap-6 px-4 py-6 sm:px-6 sm:py-8">
       {/* consistent slim status bar */}
-      <div className="border-muted-foreground/20 flex items-center gap-6 border-b py-3 text-xs tracking-widest uppercase">
+      <div className="border-muted-foreground/20 flex items-center gap-6 border-b py-3 font-mono text-xs tracking-widest uppercase">
         <div className="flex items-center gap-2">
           <div className="text-muted-foreground">Total Assertions</div>
-          <div className="text-primary text-xs font-semibold">{stats.totalAssertions}</div>
+          <div className="text-primary tabular-nums">{stats.totalAssertions}</div>
         </div>
 
         <div className="flex items-center gap-2">
           <div className="text-muted-foreground">Disputes</div>
-          <div className="text-primary text-xs font-semibold">{stats.totalDisputes}</div>
+          <div className="text-primary tabular-nums">{stats.totalDisputes}</div>
         </div>
 
         <div className="ml-auto flex items-center gap-2">
           <div className="text-muted-foreground">Active</div>
-          <div className="text-primary text-xs font-semibold">{stats.activeAssertions}</div>
+          <div className="text-primary tabular-nums">{stats.activeAssertions}</div>
         </div>
 
         <div className="flex items-center gap-2">
-          <div className="text-muted-foreground">Bond PUSD</div>
-          <div className="text-xs font-semibold">{stats.totalBondPUSD}</div>
+          <div className="text-muted-foreground">Bonded USDC</div>
+          <div className="tabular-nums">{stats.totalBondPUSD}</div>
         </div>
 
         <div className="flex items-center gap-2">
           <div className="text-muted-foreground">OPAL Locked</div>
-          <div className="text-xs font-semibold">
+          <div className="tabular-nums">
             {Intl.NumberFormat().format(stats.totalValidWeight || 0)}
           </div>
         </div>
@@ -145,7 +155,7 @@ export default function DisputesPage() {
               <button
                 key={f.value}
                 onClick={() => setFilter(f.value)}
-                className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs tracking-widest uppercase transition-colors ${
+                className={`flex items-center gap-1.5 rounded-none px-3 py-1.5 font-mono text-xs tracking-widest uppercase transition-colors ${
                   isActive
                     ? 'bg-primary/10 text-primary ring-primary/20 ring-1'
                     : 'text-muted-foreground hover:bg-muted-foreground/5 hover:text-foreground'
@@ -153,7 +163,7 @@ export default function DisputesPage() {
               >
                 {f.label}
                 <span
-                  className={`rounded-sm px-1 text-xs ${isActive ? 'bg-primary/20 text-primary' : 'bg-muted-foreground/10 text-muted-foreground'}`}
+                  className={`px-1 font-mono text-xs tabular-nums ${isActive ? 'bg-primary/20 text-primary' : 'bg-muted-foreground/10 text-muted-foreground'}`}
                 >
                   {count}
                 </span>
@@ -167,7 +177,7 @@ export default function DisputesPage() {
           placeholder="SEARCH..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="bg-muted/10 placeholder:text-muted-foreground/40 focus:ring-primary/40 h-8 w-48 rounded-md px-3 text-xs tracking-wider uppercase focus:ring-1 focus:outline-none"
+          className="bg-muted/10 border-muted-foreground/20 placeholder:text-muted-foreground/40 focus:ring-primary/40 h-8 w-48 rounded-none border px-3 font-mono text-xs tracking-widest uppercase focus:ring-1 focus:outline-none"
         />
       </div>
 
@@ -177,19 +187,19 @@ export default function DisputesPage() {
           <table className="w-full border-collapse">
             <thead>
               <tr className="border-muted-foreground/20 border-b text-left">
-                <th className="text-muted-foreground w-[45%] px-5 py-3 text-xs font-medium tracking-widest uppercase">
+                <th className="text-muted-foreground w-[45%] px-5 py-3 font-mono text-xs font-normal tracking-widest uppercase">
                   Assertion
                 </th>
-                <th className="text-muted-foreground px-5 py-3 text-xs font-medium tracking-widest uppercase">
+                <th className="text-muted-foreground px-5 py-3 font-mono text-xs font-normal tracking-widest uppercase">
                   Type
                 </th>
-                <th className="text-muted-foreground px-5 py-3 text-xs font-medium tracking-widest uppercase">
+                <th className="text-muted-foreground px-5 py-3 font-mono text-xs font-normal tracking-widest uppercase">
                   Status
                 </th>
-                <th className="text-muted-foreground px-5 py-3 text-xs font-medium tracking-widest uppercase">
+                <th className="text-muted-foreground px-5 py-3 font-mono text-xs font-normal tracking-widest uppercase">
                   Bond
                 </th>
-                <th className="text-muted-foreground px-5 py-3 text-xs font-medium tracking-widest uppercase">
+                <th className="text-muted-foreground px-5 py-3 font-mono text-xs font-normal tracking-widest uppercase">
                   P&L
                 </th>
               </tr>
@@ -200,7 +210,7 @@ export default function DisputesPage() {
                 <tr>
                   <td
                     colSpan={5}
-                    className="text-muted-foreground/30 py-16 text-center text-xs uppercase"
+                    className="text-muted-foreground/40 py-16 text-center font-mono text-xs tracking-widest uppercase"
                   >
                     No disputes found
                   </td>
@@ -220,14 +230,14 @@ export default function DisputesPage() {
                           className="grid grid-cols-[45%_1fr_1fr_1fr_1fr] items-center"
                         >
                           {/* statement */}
-                          <div className="group-hover:text-primary line-clamp-1 px-5 py-4 text-xs tracking-tight uppercase transition-colors">
+                          <div className="group-hover:text-primary line-clamp-1 px-5 py-4 text-sm transition-colors">
                             {row.statement}
                           </div>
 
                           {/* type */}
                           <div className="px-5 py-4">
                             <span
-                              className={`border px-2 py-0.5 text-xs tracking-widest uppercase ${
+                              className={`border px-2 py-0.5 font-mono text-xs tracking-widest uppercase ${
                                 row.type === 'LLM'
                                   ? 'border-red-400/40 text-red-400'
                                   : 'border-purple-400/40 text-purple-400'
@@ -240,19 +250,21 @@ export default function DisputesPage() {
                           {/* status */}
                           <div className="flex items-center gap-2 px-5 py-4">
                             <span className={`size-1.5 shrink-0 rounded-full ${dot}`} />
-                            <span className={`text-xs tracking-wide uppercase ${text}`}>
+                            <span className={`font-mono text-xs tracking-widest uppercase ${text}`}>
                               {label}
                             </span>
                           </div>
 
                           {/* bond */}
-                          <div className="text-muted-foreground px-5 py-4 text-xs uppercase">
-                            {row.opalStaked} PUSD
+                          <div className="text-muted-foreground px-5 py-4 font-mono text-xs tracking-widest uppercase tabular-nums">
+                            {row.bondUSDC} USDC
                           </div>
 
                           {/* p&l */}
-                          <div className="px-5 py-4 text-xs font-semibold uppercase">
-                            {row.pnl.startsWith('+') ? (
+                          <div className="px-5 py-4 font-mono text-xs tracking-widest uppercase tabular-nums">
+                            {row.pnl === null ? (
+                              <span className="text-muted-foreground/30">—</span>
+                            ) : row.pnl.startsWith('+') ? (
                               <span className="text-primary">{row.pnl}</span>
                             ) : (
                               <span className="text-red-400">{row.pnl}</span>

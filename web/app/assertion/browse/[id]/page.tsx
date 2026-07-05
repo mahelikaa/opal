@@ -100,39 +100,48 @@ export default function StatementPage() {
     <Container className="border-muted-foreground/50 flex h-screen flex-col overflow-hidden border-x border-dashed pt-16">
       <header className="border-foreground/40 flex h-16 shrink-0 items-center justify-between border-b px-4">
         <div className="flex items-center gap-8">
-          <div className="flex flex-col">
-            <span className="text-muted-foreground text-xs uppercase">
+          <div className="flex flex-col gap-0.5">
+            <span className="text-muted-foreground font-mono text-[10px] tracking-widest uppercase">
               {isResolved ? 'Final Outcome' : 'Current Consensus'}
             </span>
 
-            <span className={cn('text-sm font-semibold uppercase', consensusColor)}>
+            <span className={cn('font-mono text-sm tracking-wider uppercase', consensusColor)}>
               {consensus}
             </span>
           </div>
 
-          <div className="flex flex-col">
-            <span className="text-muted-foreground text-xs uppercase">Resolution Stage</span>
+          <div className="flex flex-col gap-0.5">
+            <span className="text-muted-foreground font-mono text-[10px] tracking-widest uppercase">
+              Resolution Stage
+            </span>
 
-            <span className={cn('text-sm font-semibold uppercase', STAGE_COLORS[assertion.state])}>
+            <span
+              className={cn(
+                'font-mono text-sm tracking-wider uppercase',
+                STAGE_COLORS[assertion.state]
+              )}
+            >
               {getStageLabel(assertion.state)}
             </span>
           </div>
 
-          <div className="flex flex-col">
-            <span className="text-muted-foreground text-xs uppercase">Bond Pool</span>
+          <div className="flex flex-col gap-0.5">
+            <span className="text-muted-foreground font-mono text-[10px] tracking-widest uppercase">
+              Bond Pool
+            </span>
 
-            <span className="text-sm font-semibold uppercase">
-              {assertion.bondAmountPUSD * (1 + assertion.disputeCount)} PUSD
+            <span className="font-mono text-sm tracking-wider uppercase tabular-nums">
+              {assertion.bondAmountPUSD * (1 + assertion.disputeCount)} USDC
             </span>
           </div>
         </div>
 
-        <div className="flex flex-col items-end">
-          <span className="text-muted-foreground text-xs uppercase">
+        <div className="flex flex-col items-end gap-0.5">
+          <span className="text-muted-foreground font-mono text-[10px] tracking-widest uppercase">
             {DEADLINE_LABELS[assertion.state]}
           </span>
 
-          <span className="text-sm font-semibold text-lime-400 uppercase">
+          <span className="font-mono text-sm tracking-wider text-lime-400 uppercase tabular-nums">
             {assertion.finalizedAt
               ? new Date(assertion.finalizedAt).toLocaleDateString()
               : assertion.state === 'PendingLLM' || assertion.state === 'PendingVote'
@@ -209,18 +218,18 @@ export default function StatementPage() {
                 <XIcon size={20} />
               </button>
 
-              <h2 className="mb-4 text-lg font-semibold uppercase">Auxiliary Evidence</h2>
+              <h2 className="mb-4 text-lg uppercase">Auxiliary Evidence</h2>
 
               <div className="space-y-4">
                 <div>
-                  <p className="text-muted-foreground mb-2 text-xs tracking-wide uppercase">
+                  <p className="text-muted-foreground mb-2 font-mono text-xs tracking-widest uppercase">
                     Evidence Hash
                   </p>
                   <p className="font-mono text-sm break-all">{assertion.auxiliaryHash}</p>
                 </div>
 
                 <div>
-                  <p className="text-muted-foreground mb-2 text-xs tracking-wide uppercase">
+                  <p className="text-muted-foreground mb-2 font-mono text-xs tracking-widest uppercase">
                     Source
                   </p>
                   {assertion.auxiliaryUrl && (
@@ -228,7 +237,7 @@ export default function StatementPage() {
                       href={assertion.auxiliaryUrl}
                       target="_blank"
                       rel="noreferrer noopener"
-                      className="text-primary hover:text-primary/80 text-sm uppercase underline transition-colors"
+                      className="text-primary hover:text-primary/80 font-mono text-xs tracking-widest uppercase underline underline-offset-4 transition-colors"
                     >
                       Open Evidence Source →
                     </Link>
@@ -260,22 +269,17 @@ function AssertionSection({
   return (
     <section className="flex w-full flex-col items-center gap-5 text-center">
       <div className="flex flex-col items-center gap-4">
-        <h1 className="max-w-4xl text-3xl font-bold tracking-tight uppercase md:text-4xl">
+        <h1 className="max-w-4xl font-sans text-2xl leading-snug text-balance md:text-3xl">
           {assertion.statement}
         </h1>
 
-        <Button
-          onClick={onEvidenceClick}
-          variant="outline"
-          size="sm"
-          className="rounded-none uppercase"
-        >
+        <Button onClick={onEvidenceClick} variant="outline" size="sm">
           View Evidence
         </Button>
       </div>
 
       <div className="grid grid-cols-3 gap-x-12 gap-y-4">
-        <Meta label="Assertion Bond" value={`${assertion.bondAmountPUSD} PUSD`} center />
+        <Meta label="Assertion Bond" value={`${assertion.bondAmountPUSD} USDC`} center />
 
         <Meta label="Disputes" value={`${disputeCount}`} center />
 
@@ -314,7 +318,7 @@ function LLMSection({ round }: { round: NonNullable<AssertionAccount['llmResolut
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="border-muted-foreground/30 flex h-full flex-col gap-4 border p-5">
-      <h2 className="text-muted-foreground text-xs font-semibold tracking-[0.2em] uppercase">
+      <h2 className="text-muted-foreground font-mono text-xs tracking-[0.2em] uppercase">
         {title}
       </h2>
 
@@ -334,9 +338,11 @@ function Meta({
 }) {
   return (
     <div className={cn('flex flex-col gap-1', center && 'items-center')}>
-      <span className="text-muted-foreground text-xs uppercase">{label}</span>
+      <span className="text-muted-foreground font-mono text-[10px] tracking-widest uppercase">
+        {label}
+      </span>
 
-      <span className="text-sm font-semibold break-all uppercase">{value}</span>
+      <span className="font-mono text-sm break-all uppercase tabular-nums">{value}</span>
     </div>
   );
 }

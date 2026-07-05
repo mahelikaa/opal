@@ -46,7 +46,7 @@ export default function Activity() {
   if (assertions.length === 0) {
     return (
       <div className="flex min-h-[calc(100vh-16rem)] flex-col items-center justify-center gap-4 px-4 text-center">
-        <span className="text-muted-foreground text-xs tracking-[0.3em] uppercase">
+        <span className="text-muted-foreground font-mono text-xs tracking-widest uppercase">
           No Activity Yet
         </span>
 
@@ -91,18 +91,20 @@ function Hero({ top }: { top: AssertionAccount }) {
   return (
     <section className="border-muted-foreground/30 bg-muted/5 flex flex-col items-center justify-between gap-6 border-b pb-6 lg:flex-row">
       <div className="flex w-full flex-col gap-3">
-        <span className="text-muted-foreground text-center text-xs tracking-[0.3em] uppercase">
+        <span className="text-muted-foreground text-center font-mono text-xs tracking-widest uppercase">
           Most Controversial Assertion
         </span>
 
-        <Link
-          href={`/assertion/browse/${top.id}`}
-          className="hover:text-primary mx-auto max-w-3xl text-center text-2xl font-semibold tracking-tight uppercase transition-colors md:text-4xl"
-        >
-          {top.statement}
-        </Link>
+        <h1 className="mx-auto max-w-3xl text-center text-2xl uppercase md:text-3xl">
+          <Link
+            href={`/assertion/browse/${top.id}`}
+            className="hover:text-primary transition-colors"
+          >
+            {top.statement}
+          </Link>
+        </h1>
 
-        <div className="flex items-center justify-center gap-6 text-xs uppercase">
+        <div className="flex items-center justify-center gap-6 font-mono text-xs tracking-widest uppercase tabular-nums">
           <span className="text-primary">{disputes} Disputes</span>
 
           <span className="text-primary">{Intl.NumberFormat().format(opalLocked)} OPAL Locked</span>
@@ -119,7 +121,7 @@ function Hero({ top }: { top: AssertionAccount }) {
           value={votingDeadline ? getTimeRemaining(votingDeadline) : '—'}
         />
 
-        <HeroMeta label="Bond Pool" value={`${top.bondAmountPUSD * (1 + disputes)} PUSD`} />
+        <HeroMeta label="Bond Pool" value={`${top.bondAmountPUSD * (1 + disputes)} USDC`} />
 
         <HeroMeta label="Stage" value={getStageLabel(top.state)} />
       </div>
@@ -133,7 +135,7 @@ function StatsGrid({ stats, assertions }: { stats: Stats; assertions: AssertionA
 
   const data = [
     { label: 'Assertions Created', value: String(stats.totalAssertions) },
-    { label: 'Total Bonded PUSD', value: String(stats.totalBondPUSD) },
+    { label: 'Total Bonded USDC', value: String(stats.totalBondPUSD) },
     { label: 'OPAL Locked', value: Intl.NumberFormat().format(stats.totalValidWeight || 0) },
     { label: 'Disputes Won', value: String(record.correct) },
     { label: 'Dispute Accuracy', value: accuracy },
@@ -202,12 +204,16 @@ function ProtocolActivity({ assertions }: { assertions: AssertionAccount[] }) {
 
               <div className="flex flex-1 -translate-y-1.5 flex-col gap-1 border-b pb-6 last:border-none">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm uppercase">{item.title}</span>
+                  <span className="font-mono text-xs tracking-widest uppercase">{item.title}</span>
 
-                  <span className="text-muted-foreground text-xs uppercase">{item.time}</span>
+                  <span className="text-muted-foreground font-mono text-xs tracking-widest uppercase tabular-nums">
+                    {item.time}
+                  </span>
                 </div>
 
-                <span className="text-muted-foreground text-xs uppercase">{item.description}</span>
+                <span className="text-muted-foreground text-xs leading-relaxed">
+                  {item.description}
+                </span>
               </div>
             </div>
           ))}
@@ -253,10 +259,10 @@ function ResolutionBreakdown({ assertions }: { assertions: AssertionAccount[] })
       <div className="flex flex-col gap-6">
         {data.map((item) => (
           <div key={item.label} className="flex flex-col gap-2">
-            <div className="flex items-center justify-between text-xs uppercase">
+            <div className="flex items-center justify-between font-mono text-xs tracking-widest uppercase">
               <span>{item.label}</span>
 
-              <span className="font-mono">{item.value}</span>
+              <span className="tabular-nums">{item.value}</span>
             </div>
 
             <div className="bg-muted-foreground/10 h-3 overflow-hidden">
@@ -286,17 +292,21 @@ function ReputationPanel({ assertions }: { assertions: AssertionAccount[] }) {
       <div className="flex flex-col gap-8">
         <div className="flex items-end justify-between">
           <div className="flex flex-col text-left">
-            <span className="text-muted-foreground text-xs uppercase">Reputation Score</span>
+            <span className="text-muted-foreground font-mono text-xs tracking-widest uppercase">
+              Reputation Score
+            </span>
 
-            <span className="text-primary text-6xl font-semibold tracking-tighter">
+            <span className="text-primary font-mono text-6xl tabular-nums">
               {hasHistory ? reputationScore : '—'}
             </span>
           </div>
 
           <div className="flex flex-col items-end gap-1 pb-2">
-            <span className="text-primary text-xs uppercase">Accuracy</span>
+            <span className="text-primary font-mono text-xs tracking-widest uppercase">
+              Accuracy
+            </span>
 
-            <span className="text-muted-foreground text-xs uppercase">
+            <span className="text-muted-foreground font-mono text-xs tracking-widest uppercase tabular-nums">
               {hasHistory ? alignment : 'No History'}
             </span>
           </div>
@@ -323,7 +333,7 @@ function RecentAssertions({ assertions }: { assertions: AssertionAccount[] }) {
     stage: getStageLabel(a.state),
     outcome: a.outcome ? getOutcomeLabel(a.outcome) : 'Pending',
     disputes: a.disputeCount || 0,
-    bond: `${a.bondAmountPUSD * (1 + (a.disputeCount || 0))} PUSD`,
+    bond: `${a.bondAmountPUSD * (1 + (a.disputeCount || 0))} USDC`,
     outcomeClass:
       a.outcome === 'True'
         ? 'text-primary'
@@ -338,11 +348,21 @@ function RecentAssertions({ assertions }: { assertions: AssertionAccount[] }) {
         <table className="w-full border-collapse">
           <thead>
             <tr className="border-muted-foreground/20 border-b text-left">
-              <th className="w-[45%] py-3 text-xs font-medium uppercase">Assertion</th>
-              <th className="py-3 text-xs font-medium uppercase">Stage</th>
-              <th className="py-3 text-xs font-medium uppercase">Outcome</th>
-              <th className="py-3 text-xs font-medium uppercase">Disputes</th>
-              <th className="py-3 text-xs font-medium uppercase">Bond Pool</th>
+              <th className="text-muted-foreground w-[45%] py-3 font-mono text-xs font-normal tracking-widest uppercase">
+                Assertion
+              </th>
+              <th className="text-muted-foreground py-3 font-mono text-xs font-normal tracking-widest uppercase">
+                Stage
+              </th>
+              <th className="text-muted-foreground py-3 font-mono text-xs font-normal tracking-widest uppercase">
+                Outcome
+              </th>
+              <th className="text-muted-foreground py-3 font-mono text-xs font-normal tracking-widest uppercase">
+                Disputes
+              </th>
+              <th className="text-muted-foreground py-3 font-mono text-xs font-normal tracking-widest uppercase">
+                Bond Pool
+              </th>
             </tr>
           </thead>
 
@@ -357,18 +377,24 @@ function RecentAssertions({ assertions }: { assertions: AssertionAccount[] }) {
                     href={`/assertion/browse/${row.id}`}
                     className="grid grid-cols-[45%_1fr_1fr_1fr_1fr] items-center"
                   >
-                    <div className="group-hover:text-primary py-5 text-sm uppercase transition-colors">
+                    <div className="group-hover:text-primary py-5 text-sm transition-colors">
                       {row.statement}
                     </div>
-                    <div className="py-5 text-xs uppercase">{row.stage}</div>
+                    <div className="text-muted-foreground py-5 font-mono text-xs tracking-widest uppercase">
+                      {row.stage}
+                    </div>
 
-                    <div className={`py-5 text-xs uppercase ${row.outcomeClass}`}>
+                    <div
+                      className={`py-5 font-mono text-xs tracking-widest uppercase ${row.outcomeClass}`}
+                    >
                       {row.outcome}
                     </div>
 
-                    <div className="py-5 text-xs uppercase">{row.disputes}</div>
+                    <div className="py-5 font-mono text-xs tabular-nums">{row.disputes}</div>
 
-                    <div className="py-5 text-xs uppercase">{row.bond}</div>
+                    <div className="text-muted-foreground py-5 font-mono text-xs tracking-widest uppercase tabular-nums">
+                      {row.bond}
+                    </div>
                   </Link>
                 </td>
               </tr>
@@ -382,10 +408,12 @@ function RecentAssertions({ assertions }: { assertions: AssertionAccount[] }) {
 
 function StatsCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="border-muted-foreground/40 bg-muted/5 flex h-28 flex-col items-center justify-center gap-2 border">
-      <span className="text-2xl font-medium tracking-tighter">{value}</span>
+    <div className="border-muted-foreground/40 bg-muted/5 hover:border-muted-foreground/70 flex h-28 flex-col items-center justify-center gap-2 border transition-colors">
+      <span className="font-mono text-2xl tabular-nums">{value}</span>
 
-      <span className="text-muted-foreground/70 text-center text-xs uppercase">{label}</span>
+      <span className="text-muted-foreground/70 text-center font-mono text-xs tracking-widest uppercase">
+        {label}
+      </span>
     </div>
   );
 }
@@ -403,7 +431,7 @@ function Panel({
     <section
       className={`border-muted-foreground/30 bg-muted/5 flex flex-col gap-6 border p-5 text-center ${className ?? ''}`}
     >
-      <h2 className="text-muted-foreground text-xs tracking-[0.25em] uppercase">{title}</h2>
+      <h2 className="text-muted-foreground text-xs uppercase">{title}</h2>
 
       {children}
     </section>
@@ -412,7 +440,7 @@ function Panel({
 
 function EmptyNote({ children }: { children: React.ReactNode }) {
   return (
-    <p className="text-muted-foreground/70 flex flex-1 items-center justify-center py-8 text-xs uppercase">
+    <p className="text-muted-foreground/70 flex flex-1 items-center justify-center py-8 font-mono text-xs tracking-widest uppercase">
       {children}
     </p>
   );
@@ -421,9 +449,11 @@ function EmptyNote({ children }: { children: React.ReactNode }) {
 function HeroMeta({ label, value }: { label: string; value: string }) {
   return (
     <div className="border-muted-foreground/20 flex flex-col gap-1 border p-3 text-center">
-      <span className="text-muted-foreground text-xs uppercase">{label}</span>
+      <span className="text-muted-foreground font-mono text-xs tracking-widest uppercase">
+        {label}
+      </span>
 
-      <span className="text-primary text-sm font-semibold uppercase">{value}</span>
+      <span className="text-primary font-mono text-sm uppercase tabular-nums">{value}</span>
     </div>
   );
 }
@@ -431,9 +461,11 @@ function HeroMeta({ label, value }: { label: string; value: string }) {
 function MiniMeta({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex flex-col gap-1">
-      <span className="text-muted-foreground text-xs uppercase">{label}</span>
+      <span className="text-muted-foreground font-mono text-xs tracking-widest uppercase">
+        {label}
+      </span>
 
-      <span className="text-sm font-semibold uppercase">{value}</span>
+      <span className="font-mono text-sm uppercase tabular-nums">{value}</span>
     </div>
   );
 }

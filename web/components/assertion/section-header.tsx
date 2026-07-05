@@ -27,7 +27,7 @@ export default function SectionHeader({
     >
       <div className="flex flex-1 items-center gap-3">
         <span
-          className={`text-sm font-medium tracking-widest uppercase transition-colors md:text-base ${
+          className={`font-mono text-xs tracking-widest uppercase transition-colors md:text-sm ${
             open ? 'text-foreground' : 'text-foreground/50'
           }`}
         >

@@ -20,7 +20,7 @@ export default function VotingPanel({ round, votingClosed, userVote }: VotingPan
 
   return (
     <section className="border-muted-foreground/30 flex h-full flex-col gap-4 border p-5">
-      <h2 className="text-muted-foreground text-xs font-semibold tracking-[0.2em] uppercase">
+      <h2 className="text-muted-foreground font-mono text-xs tracking-[0.2em] uppercase">
         Vote Tally
       </h2>
 
@@ -58,18 +58,16 @@ export default function VotingPanel({ round, votingClosed, userVote }: VotingPan
           const isUserVote = userVote === outcome;
 
           return (
-            <div key={outcome} className="flex flex-col gap-1.5 border-b pb-2">
-              <div className="flex items-center justify-between text-sm uppercase">
-                <span className={cn(isUserVote && 'text-primary font-semibold')}>
+            <div key={outcome} className="border-border flex flex-col gap-1.5 border-b pb-2">
+              <div className="flex items-center justify-between font-mono text-sm tracking-wider uppercase">
+                <span className={cn(isUserVote && 'text-primary')}>
                   {getOutcomeLabel(outcome)}
                   {isUserVote && (
-                    <span className="text-primary/80 ml-2 text-xs tracking-[0.2em]">
-                      Your Vote
-                    </span>
+                    <span className="text-primary/80 ml-2 text-xs tracking-[0.2em]">Your Vote</span>
                   )}
                 </span>
 
-                <span className="font-mono font-semibold">
+                <span className="tabular-nums">
                   {votes.toLocaleString()} · {share}%
                 </span>
               </div>
@@ -88,9 +86,11 @@ export default function VotingPanel({ round, votingClosed, userVote }: VotingPan
 function Meta({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex flex-col gap-1">
-      <span className="text-muted-foreground text-xs uppercase">{label}</span>
+      <span className="text-muted-foreground font-mono text-[10px] tracking-widest uppercase">
+        {label}
+      </span>
 
-      <span className="text-sm font-semibold break-all uppercase">{value}</span>
+      <span className="font-mono text-sm break-all uppercase tabular-nums">{value}</span>
     </div>
   );
 }

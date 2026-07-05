@@ -40,7 +40,7 @@ export default function DisputeAction({
           title="Liveness Window Expired"
           note="No dispute was filed before the liveness deadline. Anyone can now finalize the assertion with the default TRUE outcome (mirrors finalize_undisputed — permissionless)."
         >
-          <Button size="lg" onClick={onFinalize} className="uppercase">
+          <Button size="lg" onClick={onFinalize}>
             Finalize as TRUE
           </Button>
         </Panel>
@@ -72,7 +72,6 @@ export default function DisputeAction({
               onClick={() => onSubmitLlmResolution(outcome)}
               variant="outline"
               size="lg"
-              className="uppercase"
             >
               {getOutcomeLabel(outcome)}
             </Button>
@@ -90,7 +89,7 @@ export default function DisputeAction({
           title="Challenge Window Expired"
           note={`LLM proposed ${assertion.llmResolutionRound?.outcome ?? 'Unknown'} and no challenge was filed. Anyone can now finalize the assertion with the LLM outcome and settle the first dispute (mirrors finalize_llm_resolution).`}
         >
-          <Button size="lg" onClick={onFinalize} className="uppercase">
+          <Button size="lg" onClick={onFinalize}>
             Finalize LLM Resolution
           </Button>
         </Panel>
@@ -117,7 +116,7 @@ export default function DisputeAction({
         title="Vote Setup In Progress"
         note="The LLM resolution has been challenged. Voting opens once the vote round is initialized (permissionless — anyone can open it)."
       >
-        <Button size="lg" onClick={onOpenVote} variant="outline" className="uppercase">
+        <Button size="lg" onClick={onOpenVote} variant="outline">
           Open Vote
         </Button>
       </Panel>
@@ -143,7 +142,6 @@ export default function DisputeAction({
             <Button
               size="lg"
               variant="outline"
-              className="uppercase"
               nativeButton={false}
               render={<Link href={voteHref} />}
             >
@@ -159,12 +157,7 @@ export default function DisputeAction({
           title="OPAL Voting Is Live"
           note={`Voting closes in ${closesIn}. Weigh in with your OPAL — the leading outcome becomes the final resolution.`}
         >
-          <Button
-            size="lg"
-            className="uppercase"
-            nativeButton={false}
-            render={<Link href={voteHref} />}
-          >
+          <Button size="lg" nativeButton={false} render={<Link href={voteHref} />}>
             Cast Your Vote
           </Button>
         </Panel>
@@ -177,7 +170,7 @@ export default function DisputeAction({
         title="Voting Closed"
         note="The voting window has ended. Anyone can now finalize the vote resolution — the leading outcome becomes final and both disputes settle (mirrors finalize_vote_resolution)."
       >
-        <Button size="lg" onClick={onFinalize} className="uppercase">
+        <Button size="lg" onClick={onFinalize}>
           Finalize Vote Resolution
         </Button>
       </Panel>
@@ -242,22 +235,18 @@ function settlementLabel(disputeCorrect: boolean | null) {
 function SettlementMeta({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex flex-col items-center gap-1">
-      <span className="text-muted-foreground text-xs uppercase">{label}</span>
+      <span className="text-muted-foreground font-mono text-[10px] tracking-widest uppercase">
+        {label}
+      </span>
 
-      <span className="text-sm font-semibold break-all uppercase">{value}</span>
+      <span className="font-mono text-sm break-all uppercase tabular-nums">{value}</span>
     </div>
   );
 }
 
 function DisputeLink({ href, label }: { href: string; label: string }) {
   return (
-    <Button
-      variant="destructive"
-      size="lg"
-      className="uppercase"
-      nativeButton={false}
-      render={<Link href={href} />}
-    >
+    <Button variant="destructive" size="lg" nativeButton={false} render={<Link href={href} />}>
       <LinkBreakIcon />
       {label}
     </Button>
@@ -278,11 +267,11 @@ function Panel({
   return (
     <section className="border-muted-foreground/40 bg-card/40 w-full border px-8 py-7 md:px-10">
       <div className="flex flex-col items-center gap-3 text-center">
-        <span className="text-primary text-xs font-semibold tracking-[0.25em] uppercase">
+        <span className="text-primary font-mono text-xs tracking-[0.25em] uppercase">
           {eyebrow}
         </span>
 
-        <h2 className="text-xl font-bold tracking-wide uppercase md:text-2xl">{title}</h2>
+        <h2 className="text-xl uppercase md:text-2xl">{title}</h2>
 
         <p className="text-muted-foreground/80 max-w-2xl text-sm leading-relaxed">{note}</p>
 

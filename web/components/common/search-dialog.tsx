@@ -179,7 +179,7 @@ export function SearchDialog({ isOpen, onClose }: SearchDialogProps) {
                 key={fmt.label}
                 className="bg-muted/40 inline-flex items-center gap-1.5 rounded-sm px-2 py-1"
               >
-                <span className="text-muted-foreground/70 font-mono text-[10px] font-semibold tracking-wider uppercase">
+                <span className="text-muted-foreground/70 font-mono text-[10px] tracking-wider uppercase">
                   {fmt.label}
                 </span>
                 <span className="text-muted-foreground/40 font-mono text-[10px]">{fmt.hint}</span>

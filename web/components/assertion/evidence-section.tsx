@@ -35,8 +35,10 @@ export default function EvidenceSection({
             className="flex h-full flex-col p-6"
           >
             <div className="mb-3 flex items-center gap-2">
-              <FileTextIcon size={18} className="text-muted-foreground/50" />
-              <span className="text-muted-foreground/50 text-sm md:text-sm">Auxiliary data</span>
+              <FileTextIcon size={16} className="text-muted-foreground/50" />
+              <span className="text-muted-foreground/50 font-mono text-xs tracking-widest uppercase">
+                Auxiliary Data
+              </span>
             </div>
             <label htmlFor="auxiliary-data" className="sr-only">
               Auxiliary Data
@@ -67,7 +69,7 @@ export default function EvidenceSection({
                 )}
               </AnimatePresence>
 
-              <span className="text-muted-foreground/85 text-xs tabular-nums md:text-xs">
+              <span className="text-muted-foreground/85 font-mono text-xs tabular-nums">
                 {auxiliaryData.length}
               </span>
             </div>

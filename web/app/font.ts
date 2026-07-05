@@ -1,18 +1,19 @@
-import localFont from 'next/font/local';
-
-// Heading face — condensed, used bold via the base-layer h1–h6 rule in globals.css.
-export const Khand = localFont({
-  src: '../public/fonts/Khand-Variable.woff2',
-  variable: '--font-khand',
-  weight: '300 700',
-  display: 'swap',
-});
-
-// Body face — regular weight. Also backs the `font-mono` utility (tabular-nums where
-// alignment matters) since the site no longer ships a monospace face.
-export const Hind = localFont({
-  src: '../public/fonts/Hind-Variable.woff2',
-  variable: '--font-hind',
-  weight: '300 700',
-  display: 'swap',
-});
+// Single import point for the site's fonts — the Geist family only.
+//
+// - GeistSans        → body (`--font-geist-sans`, variable 100–900)
+// - GeistMono        → labels, eyebrows, numerics, addresses (`--font-geist-mono`)
+// - GeistPixelSquare → headings (`--font-geist-pixel-square`, weight 500 only);
+//   the base-layer h1–h6 rule in globals.css points `--font-heading` at it.
+//
+// The other pixel variants (Grid/Circle/Triangle/Line) are available for
+// decorative one-offs — import from here and apply `.className` locally so the
+// face is only loaded where used.
+export { GeistSans } from 'geist/font/sans';
+export { GeistMono } from 'geist/font/mono';
+export {
+  GeistPixelSquare,
+  GeistPixelGrid,
+  GeistPixelCircle,
+  GeistPixelTriangle,
+  GeistPixelLine,
+} from 'geist/font/pixel';

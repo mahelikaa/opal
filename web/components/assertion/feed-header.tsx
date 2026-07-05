@@ -54,7 +54,7 @@ export default function Header({
       <div className="flex w-full scrollbar-thin items-center gap-2 overflow-x-auto px-4 py-1 whitespace-nowrap">
         <span
           id="feed-sort-label"
-          className="text-muted-foreground text-[11px] tracking-[0.24em] uppercase"
+          className="text-muted-foreground font-mono text-[11px] tracking-[0.24em] uppercase"
         >
           Sort by
         </span>
@@ -82,7 +82,7 @@ export default function Header({
 
         <span
           id="feed-stage-label"
-          className="text-muted-foreground ml-2 text-[11px] tracking-[0.24em] uppercase"
+          className="text-muted-foreground ml-2 font-mono text-[11px] tracking-[0.24em] uppercase"
         >
           Stage
         </span>

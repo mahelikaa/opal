@@ -1,5 +1,4 @@
 'use client';
-import { motion as m } from 'motion/react';
 import CornerMarkers from '../common/corner-markers';
 
 export default function Consumer() {
@@ -7,7 +6,7 @@ export default function Consumer() {
     <>
       <section className="relative overflow-x-clip px-4 py-32">
         <div className="mx-auto mb-16 max-w-3xl">
-          <h2 className="mt-3 text-center text-3xl font-bold tracking-tight text-balance uppercase md:text-4xl">
+          <h2 className="mt-3 text-center text-2xl text-balance uppercase md:text-3xl">
             Built for integrators, challengers, and protocol operators
           </h2>
         </div>
@@ -36,12 +35,12 @@ export default function Consumer() {
               className="border-border/50 hover:border-border bg-background/70 group flex h-full flex-col border py-6 shadow-sm backdrop-blur transition duration-300 ease-out"
             >
               <header className="border-border/50 group-hover:border-border flex items-center justify-between gap-4 border-b px-6 pb-4">
-                <h3 className="text-xs font-semibold tracking-tight uppercase">{item.title}</h3>
-                <span className="text-muted-foreground group-hover:text-primary text-xs font-semibold tracking-[0.35em] uppercase transition duration-300 ease-out">
+                <h3 className="text-sm uppercase">{item.title}</h3>
+                <span className="text-muted-foreground group-hover:text-primary font-mono text-xs tracking-[0.3em] uppercase transition duration-300 ease-out">
                   Opal
                 </span>
               </header>
-              <p className="text-muted-foreground mt-5 px-6 text-xs leading-7 text-balance uppercase">
+              <p className="text-muted-foreground mt-5 px-6 text-sm leading-relaxed text-balance">
                 {item.text}
               </p>
             </article>

@@ -43,7 +43,7 @@ export default function Navbar() {
           className="object-cover scale-175"
           />
           </span>
-          <span className="text-xl font-semibold tracking-tight uppercase">Opal</span>
+          <span className="font-heading text-lg uppercase">Opal</span>
         </Link>
         <div className="hidden items-center gap-4 md:flex">
           <Button
@@ -53,8 +53,8 @@ export default function Navbar() {
             onClick={() => setIsSearchOpen(true)}
             className="bg-muted/40 hover:bg-muted/70 w-64 justify-between px-3 font-normal"
           >
-            <div className="text-muted-foreground text-xs">Search</div>
-            <kbd className="bg-muted text-muted-foreground rounded text-xs font-semibold">⌘ + K</kbd>
+            <div className="text-muted-foreground font-mono text-xs tracking-widest uppercase">Search</div>
+            <kbd className="bg-muted text-muted-foreground rounded text-xs">⌘ + K</kbd>
           </Button>
           <NavbarAuth layout="desktop" />
         </div>

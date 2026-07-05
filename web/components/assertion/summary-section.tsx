@@ -57,33 +57,33 @@ export default function SummarySection({
 
             <div className="mx-auto mt-6 grid w-full max-w-3xl grid-cols-2 gap-4 md:grid-cols-4">
               <div className="min-w-0">
-                <div className="text-muted-foreground/75 text-xs tracking-[0.18em] uppercase">
+                <div className="text-muted-foreground/75 font-mono text-[10px] tracking-[0.2em] uppercase">
                   Bond
                 </div>
-                <div className="text-primary mt-1 text-sm">{bond} PUSD</div>
+                <div className="text-primary mt-1 font-mono text-sm tabular-nums">{bond} USDC</div>
               </div>
 
               <div className="min-w-0">
-                <div className="text-muted-foreground/75 text-xs tracking-[0.18em] uppercase">
+                <div className="text-muted-foreground/75 font-mono text-[10px] tracking-[0.2em] uppercase">
                   Window
                 </div>
-                <div className="text-foreground mt-1 truncate text-sm">{windowLabel}</div>
+                <div className="text-foreground mt-1 truncate font-mono text-sm">{windowLabel}</div>
               </div>
 
               <div className="min-w-0">
-                <div className="text-muted-foreground/75 text-xs tracking-[0.18em] uppercase">
+                <div className="text-muted-foreground/75 font-mono text-[10px] tracking-[0.2em] uppercase">
                   Expires
                 </div>
-                <div className="text-foreground mt-1 text-sm">
+                <div className="text-foreground mt-1 font-mono text-sm tabular-nums">
                   {compactExpiry(formatExpiry(windowValue))}
                 </div>
               </div>
 
               <div className="min-w-0">
-                <div className="text-muted-foreground/75 text-xs tracking-[0.18em] uppercase">
+                <div className="text-muted-foreground/75 font-mono text-[10px] tracking-[0.2em] uppercase">
                   Aux Hash
                 </div>
-                <div className="text-foreground mt-1 truncate text-sm">
+                <div className="text-foreground mt-1 truncate font-mono text-sm">
                   {auxiliaryData ? hashPreview(auxiliaryData) : '—'}
                 </div>
               </div>

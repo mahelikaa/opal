@@ -5,7 +5,7 @@ import Container from '@/components/common/container';
 import Navbar from '@/components/common/navbar';
 import { Providers } from '@/providers/providers';
 
-import { Hind, Khand } from './font';
+import { GeistMono, GeistPixelSquare, GeistSans } from './font';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -22,7 +22,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${Hind.variable} ${Khand.variable} ${Hind.className} h-full antialiased`}
+      className={`${GeistSans.variable} ${GeistMono.variable} ${GeistPixelSquare.variable} ${GeistSans.className} h-full antialiased`}
       suppressHydrationWarning
     >
       <body className="relative overflow-x-clip">

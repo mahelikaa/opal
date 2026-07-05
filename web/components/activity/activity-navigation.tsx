@@ -84,20 +84,22 @@ export default function ActivityNavigation() {
                 key={href}
                 aria-current={isActive ? 'page' : undefined}
                 className={
-                  `flex snap-center flex-col items-center justify-center gap-1 rounded-md px-3 py-1.5 whitespace-nowrap transition-colors duration-150 md:flex-row md:gap-2 ` +
+                  `flex snap-center flex-col items-center justify-center gap-1 rounded-none px-3 py-1.5 whitespace-nowrap transition-colors duration-150 md:flex-row md:gap-2 ` +
                   (isActive
                     ? 'text-primary bg-primary/10 ring-primary/10 ring-1'
-                    : 'text-foreground/90 hover:bg-muted-foreground/5')
+                    : 'text-muted-foreground hover:bg-muted-foreground/5 hover:text-foreground')
                 }
               >
                 <Icon className="size-4" />
-                <span className="text-sm md:text-base">{label}</span>
+                <span className="font-mono text-xs tracking-widest uppercase">{label}</span>
               </Link>
             );
           })}
         </div>
         <div className="flex items-center px-4">
-          <span className="font-mono text-sm">{trimmedAddress}</span>
+          <span className="text-muted-foreground font-mono text-xs tracking-widest">
+            {trimmedAddress}
+          </span>
           <Button variant="ghost" size="icon-sm" className="ml-2" onClick={handleCopy}>
             {isCopied ? <CheckIcon weight="bold" /> : <CopySimpleIcon weight="bold" />}
           </Button>
