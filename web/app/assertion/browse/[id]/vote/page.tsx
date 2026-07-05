@@ -15,7 +15,6 @@ import {
 import type { Icon } from '@phosphor-icons/react';
 import { motion as m } from 'motion/react';
 
-import Container from '@/components/common/container';
 import { Button } from '@/components/ui/button';
 import { getOutcomeLabel } from '@/lib/assertion-labels';
 import { MOCK_VOTE_WEIGHT, castVote, useAssertions, useUserVote } from '@/lib/assertion-store';
@@ -83,7 +82,7 @@ export default function VoteScreen() {
 
   if (!votingLive || !round) {
     return (
-      <Container className="border-muted-foreground/50 flex min-h-screen flex-col items-center justify-center gap-4 border-x border-dashed px-4">
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4 px-4">
         <h1 className="text-xl uppercase md:text-2xl">
           {votingClosed ? 'Voting Closed' : 'Voting Not Open'}
         </h1>
@@ -97,7 +96,7 @@ export default function VoteScreen() {
         <Button variant="outline" nativeButton={false} render={<Link href={backHref} />}>
           Back to Assertion
         </Button>
-      </Container>
+      </div>
     );
   }
 
@@ -117,7 +116,7 @@ export default function VoteScreen() {
       : `Confirm Vote — ${getOutcomeLabel(selected)} · ${MOCK_VOTE_WEIGHT.toLocaleString()} OPAL`;
 
   return (
-    <Container className="border-muted-foreground/50 flex min-h-screen flex-col border-x border-dashed px-4 pt-24 pb-8">
+    <div className="flex min-h-screen flex-col px-4 pt-24 pb-8">
       <m.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
@@ -150,7 +149,7 @@ export default function VoteScreen() {
               Cast Your Vote
             </span>
 
-            <h1 className="max-w-3xl font-sans text-2xl leading-snug text-balance md:text-3xl">
+            <h1 className="max-w-3xl text-xl leading-snug text-balance uppercase md:text-2xl">
               {assertion.statement}
             </h1>
 
@@ -191,7 +190,7 @@ export default function VoteScreen() {
                     'group flex min-h-40 flex-col items-start justify-between gap-4 border p-6 text-left transition-colors md:p-8',
                     isSelected
                       ? 'border-primary bg-primary/10'
-                      : 'border-muted-foreground/40 hover:border-primary/60 hover:bg-primary/5'
+                      : 'border-border hover:border-primary/60 hover:bg-primary/5'
                   )}
                 >
                   <OutcomeIcon
@@ -228,7 +227,7 @@ export default function VoteScreen() {
           </p>
         </div>
 
-        <div className="border-muted-foreground/50 border-t pt-4">
+        <div className="border-border border-t pt-4">
           <m.button
             whileHover={selected ? { scale: 1.005 } : {}}
             whileTap={selected ? { scale: 0.995 } : {}}
@@ -238,14 +237,14 @@ export default function VoteScreen() {
               'w-full py-4 font-mono text-xs tracking-widest uppercase transition-colors',
               selected
                 ? 'bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer'
-                : 'bg-muted/30 text-muted-foreground/25 border-muted-foreground/10 cursor-not-allowed border'
+                : 'border-border bg-muted/40 text-muted-foreground cursor-not-allowed border'
             )}
           >
             {confirmLabel}
           </m.button>
         </div>
       </m.div>
-    </Container>
+    </div>
   );
 }
 
@@ -265,7 +264,7 @@ function VoteRecorded({
   const totalWeight = Number(round.totalValidWeight);
 
   return (
-    <Container className="border-muted-foreground/50 flex min-h-screen flex-col items-center justify-center border-x border-dashed px-4 py-24">
+    <div className="flex min-h-screen flex-col items-center justify-center px-4 py-24">
       <m.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
@@ -323,6 +322,6 @@ function VoteRecorded({
           Back to Assertion
         </Button>
       </m.div>
-    </Container>
+    </div>
   );
 }

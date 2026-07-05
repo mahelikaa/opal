@@ -13,7 +13,6 @@ import {
 } from '@phosphor-icons/react';
 import { CheckIcon, CopySimpleIcon } from '@phosphor-icons/react';
 
-import Container from '../common/container';
 import { Button } from '../ui/button';
 
 const LINKS = [
@@ -72,7 +71,7 @@ export default function ActivityNavigation() {
   const trimmedAddress = address ? `${address.slice(0, 6)}...${address.slice(-4)}` : '';
 
   return (
-    <Container className="bg-background border-muted-foreground/50 sticky top-16 z-20 border-b">
+    <div className="bg-background border-border sticky top-16 z-20 border-b">
       <div className="scrollbar-thumb-muted-foreground/20 flex w-full scrollbar-thin scrollbar-track-transparent items-center justify-between overflow-x-auto">
         <div className="flex w-max snap-x snap-mandatory gap-2 px-4 py-3 md:w-fit">
           {LINKS.map(({ label, path, icon: Icon }) => {
@@ -105,6 +104,6 @@ export default function ActivityNavigation() {
           </Button>
         </div>
       </div>
-    </Container>
+    </div>
   );
 }

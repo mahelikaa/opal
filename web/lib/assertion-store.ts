@@ -70,12 +70,35 @@ export function updateAssertion(
 // These mirror the programs/opal instructions and are the seams where real transaction
 // submission will replace store updates. No on-chain calls are made yet.
 
-const OUTCOME_CODES: Record<ResolutionOutcome, 0 | 1 | 2 | 3> = {
+const OUTCOME_CODES: Record<ResolutionOutcome, 0 | 1 | 3> = {
   True: 0,
   False: 1,
-  TooEarly: 2,
   Unresolvable: 3,
 };
+
+// A single outcome must reach this weighted share of the vote or the round settles
+// Unresolvable. Mirrors ProtocolConfig.supermajority_bps (a config field, not a constant
+// on-chain — 6700 matches the program tests).
+export const SUPERMAJORITY_BPS = 6700;
+
+// Applies the supermajority rule to a tally: the leading outcome wins only if it holds
+// at least SUPERMAJORITY_BPS of the total weight; otherwise the vote is Unresolvable.
+function tallyOutcome(aggregateVotes: Record<ResolutionOutcome, number>): ResolutionOutcome {
+  const entries = Object.entries(aggregateVotes) as [ResolutionOutcome, number][];
+  const total = entries.reduce((sum, [, weight]) => sum + weight, 0);
+  if (total === 0) return 'Unresolvable';
+  const [leading, weight] = entries.reduce((top, candidate) =>
+    candidate[1] > top[1] ? candidate : top
+  );
+  return weight * 10_000 >= total * SUPERMAJORITY_BPS ? leading : 'Unresolvable';
+}
+
+// Settlement is no-fault when the outcome is Unresolvable: both bonds are returned and
+// nobody is slashed, so disputeCorrect stays null even though the dispute is settled.
+function disputeCorrectness(outcome: ResolutionOutcome, challenged: ResolutionOutcome | null) {
+  if (outcome === 'Unresolvable') return null;
+  return outcome !== (challenged ?? 'True');
+}
 
 // Short mock windows so the full lifecycle stays walkable in one session.
 const MOCK_CHALLENGE_WINDOW_MS = 5 * 60 * 1000;
@@ -108,8 +131,8 @@ export function fileLlmDispute(id: string, disputer: string) {
   }));
 }
 
-// Mirrors `submit_llm_resolution` — permissionless once the council feeds have posted.
-// Mock: the chosen outcome stands in for the three-feed majority vote.
+// Mirrors `submit_llm_resolution` — the trusted LLM resolver posts its verdict.
+// Mock: the chosen outcome stands in for the resolver's verdict.
 export function submitLlmResolution(id: string, outcome: ResolutionOutcome) {
   const now = new Date();
   updateAssertion(id, (prev) => {
@@ -152,7 +175,7 @@ export function fileVoteDispute(id: string, disputer: string) {
         votingStartsAt: null,
         votingDeadline: null,
         totalValidWeight: 0n,
-        aggregateVotes: { True: 0, False: 0, TooEarly: 0, Unresolvable: 0 },
+        aggregateVotes: { True: 0, False: 0, Unresolvable: 0 },
         finalOutcome: null,
       },
     };
@@ -177,10 +200,12 @@ export function openVote(id: string) {
   });
 }
 
-// Mock vote weight until MagicBlock-weighted TWAV voting is wired.
+// Mock USDC stake. Weight is linear (1 staked USDC = 1 vote); real voting runs sealed
+// on a MagicBlock ephemeral rollup and is not wired yet.
 export const MOCK_VOTE_WEIGHT = 5000;
 
-// Mock vote casting — real MagicBlock-weighted TWAV voting is not wired yet.
+// Mock vote casting — real sealed MagicBlock voting is not wired yet. finalOutcome is
+// kept as a provisional read of the tally under the supermajority rule.
 export function castVote(id: string, outcome: ResolutionOutcome, weight: number) {
   userVotes = { ...userVotes, [id]: outcome };
   updateAssertion(id, (prev) => {
@@ -188,17 +213,13 @@ export function castVote(id: string, outcome: ResolutionOutcome, weight: number)
     const aggregateVotes = { ...prev.voteResolutionRound.aggregateVotes };
     aggregateVotes[outcome] += weight;
 
-    const leadingOutcome = (Object.entries(aggregateVotes) as [ResolutionOutcome, number][]).reduce(
-      (leader, candidate) => (candidate[1] > leader[1] ? candidate : leader)
-    )[0];
-
     return {
       ...prev,
       voteResolutionRound: {
         ...prev.voteResolutionRound,
         aggregateVotes,
         totalValidWeight: prev.voteResolutionRound.totalValidWeight + BigInt(weight),
-        finalOutcome: leadingOutcome,
+        finalOutcome: tallyOutcome(aggregateVotes),
       },
     };
   });
@@ -223,21 +244,16 @@ export function finalizeAssertion(id: string) {
         llmDispute: prev.llmDispute && {
           ...prev.llmDispute,
           settlementResolution: outcome,
-          disputeCorrect: outcome !== 'True',
+          // The first dispute challenges the optimistic default True; Unresolvable
+          // settles no-fault (bond returned, disputeCorrect stays null).
+          disputeCorrect: disputeCorrectness(outcome, null),
           settled: true,
         },
       };
     }
 
     if (prev.state === 'Voting' && prev.voteResolutionRound) {
-      const entries = Object.entries(prev.voteResolutionRound.aggregateVotes) as [
-        ResolutionOutcome,
-        number,
-      ][];
-      const [leading, weight] = entries.reduce((top, candidate) =>
-        candidate[1] > top[1] ? candidate : top
-      );
-      const outcome: ResolutionOutcome = weight > 0 ? leading : 'Unresolvable';
+      const outcome = tallyOutcome(prev.voteResolutionRound.aggregateVotes);
 
       return {
         ...prev,
@@ -248,13 +264,13 @@ export function finalizeAssertion(id: string) {
         llmDispute: prev.llmDispute && {
           ...prev.llmDispute,
           settlementResolution: outcome,
-          disputeCorrect: outcome !== 'True',
+          disputeCorrect: disputeCorrectness(outcome, null),
           settled: true,
         },
         voteDispute: prev.voteDispute && {
           ...prev.voteDispute,
           settlementResolution: outcome,
-          disputeCorrect: outcome !== prev.voteDispute.challengedLLMResolution,
+          disputeCorrect: disputeCorrectness(outcome, prev.voteDispute.challengedLLMResolution),
           settled: true,
         },
       };

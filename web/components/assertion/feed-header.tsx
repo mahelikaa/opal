@@ -1,6 +1,5 @@
 import type { QuickFilter, SortField, StageFilter } from '@/types/filters';
 
-import Container from '../common/container';
 import { Button } from '../ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 
@@ -50,7 +49,7 @@ export default function Header({
   onResetFilters,
 }: HeaderProps) {
   return (
-    <Container className="bg-background border-muted-foreground/50 sticky top-16 z-10 flex h-16 w-full items-center justify-center border-b">
+    <div className="bg-background border-border sticky top-16 z-10 flex h-16 w-full items-center justify-center border-b">
       <div className="flex w-full scrollbar-thin items-center gap-2 overflow-x-auto px-4 py-1 whitespace-nowrap">
         <span
           id="feed-sort-label"
@@ -136,6 +135,6 @@ export default function Header({
           </Button>
         </div>
       </div>
-    </Container>
+    </div>
   );
 }

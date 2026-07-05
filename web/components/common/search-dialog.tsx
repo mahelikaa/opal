@@ -87,7 +87,7 @@ export function SearchDialog({ isOpen, onClose }: SearchDialogProps) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-start justify-center bg-black/60 pt-[18vh] backdrop-blur-sm"
       onClick={onClose}
     >
       <div
@@ -106,7 +106,7 @@ export function SearchDialog({ isOpen, onClose }: SearchDialogProps) {
         {/* Top bar */}
         <div className="border-border flex items-center justify-between border-b px-5 py-3">
           <div className="flex items-center gap-2.5">
-            <span className="bg-primary size-1.5 rounded-full" />
+            <span className="bg-primary size-1.5" />
             <span
               id="search-dialog-title"
               className="text-muted-foreground font-mono text-[11px] font-medium tracking-[0.2em] uppercase"
@@ -177,12 +177,12 @@ export function SearchDialog({ isOpen, onClose }: SearchDialogProps) {
             {ADDRESS_FORMATS.map((fmt) => (
               <span
                 key={fmt.label}
-                className="bg-muted/40 inline-flex items-center gap-1.5 rounded-sm px-2 py-1"
+                className="border-border inline-flex items-center gap-1.5 border px-2 py-1"
               >
-                <span className="text-muted-foreground/70 font-mono text-[10px] tracking-wider uppercase">
+                <span className="text-muted-foreground font-mono text-[10px] tracking-wider uppercase">
                   {fmt.label}
                 </span>
-                <span className="text-muted-foreground/40 font-mono text-[10px]">{fmt.hint}</span>
+                <span className="text-muted-foreground/50 font-mono text-[10px]">{fmt.hint}</span>
               </span>
             ))}
           </div>

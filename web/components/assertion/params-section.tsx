@@ -93,7 +93,7 @@ export default function ParamsSection({
                     <span className="text-muted-foreground font-mono text-xs tracking-widest uppercase">
                       Assertion Bond
                     </span>
-                    <span className="text-muted-foreground/60 border-muted-foreground/30 border px-1.5 py-0.5 font-mono text-[10px] tracking-widest uppercase">
+                    <span className="text-muted-foreground/60 border-border border px-1.5 py-0.5 font-mono text-[10px] tracking-widest uppercase">
                       Fixed
                     </span>
                   </div>
@@ -108,7 +108,7 @@ export default function ParamsSection({
                   <span className="text-muted-foreground font-mono text-xs tracking-widest uppercase">
                     Expires
                   </span>
-                  <span className="font-mono text-sm uppercase tabular-nums">{expiry}</span>
+                  <span className="font-mono text-base uppercase tabular-nums">{expiry}</span>
                   <span className="text-muted-foreground/85 text-xs">
                     {formatRelativeExpiry(expiry)}
                   </span>

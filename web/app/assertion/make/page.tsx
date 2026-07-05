@@ -10,7 +10,6 @@ import ParamsSection from '@/components/assertion/params-section';
 import SectionHeader from '@/components/assertion/section-header';
 import StatementSection from '@/components/assertion/statement-section';
 import SummarySection from '@/components/assertion/summary-section';
-import Container from '@/components/common/container';
 import { ASSERTION_BOND_PUSD } from '@/data/assertion';
 import { addAssertion } from '@/lib/assertion-store';
 import { useWallet } from '@/providers/wallet-context';
@@ -143,16 +142,18 @@ export default function MakeAssertion() {
       : `Stake ${bond} USDC and Assert`;
 
   return (
-    <Container className="border-muted-foreground/50 relative flex h-screen flex-col overflow-hidden border-x border-dashed px-4 pt-18 pb-4">
+    <div className="relative flex h-screen flex-col overflow-hidden px-4 pt-18 pb-4">
       <m.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35, ease: 'easeOut' }}
         className="relative z-10 mt-4 flex h-full flex-col overflow-hidden"
       >
-        <div className="bg-background border-muted-foreground/50 flex h-full flex-col overflow-hidden border">
+        <div className="bg-background border-border flex h-full flex-col overflow-hidden border">
           <SectionHeader
             label="Statement"
+            step="01"
+            complete={statementValid}
             open={open === 'statement'}
             onClick={() => toggle('statement')}
             peek={statement || undefined}
@@ -169,6 +170,8 @@ export default function MakeAssertion() {
 
           <SectionHeader
             label="Bond & Window"
+            step="02"
+            complete
             open={open === 'params'}
             showShortcut={open === 'params'}
             shortcutHint="Ctrl+Enter"
@@ -186,6 +189,8 @@ export default function MakeAssertion() {
 
           <SectionHeader
             label="Auxiliary Data"
+            step="03"
+            complete={Boolean(auxiliaryData)}
             open={open === 'evidence'}
             onClick={() => toggle('evidence')}
             peek={
@@ -209,6 +214,8 @@ export default function MakeAssertion() {
 
           <SectionHeader
             label="Claim Summary"
+            step="04"
+            complete={statementValid}
             open={open === 'summary'}
             onClick={() => toggle('summary')}
             peek={statement ? `${statement.slice(0, 40)}…` : undefined}
@@ -226,7 +233,7 @@ export default function MakeAssertion() {
             formatExpiry={(seconds) => formatExpiry(createdAt, seconds)}
           />
 
-          <div className="border-muted-foreground/50 mt-auto border-t p-5">
+          <div className="border-border mt-auto border-t p-5">
             <m.button
               whileHover={buttonDisabled ? {} : { scale: 1.005 }}
               whileTap={buttonDisabled ? {} : { scale: 0.995 }}
@@ -238,9 +245,9 @@ export default function MakeAssertion() {
                 }
                 handleSubmit();
               }}
-              className={`w-full py-3 font-mono text-xs tracking-widest uppercase transition-colors ${
+              className={`w-full py-4 font-mono text-sm tracking-[0.2em] uppercase transition-colors ${
                 buttonDisabled
-                  ? 'bg-muted/30 text-muted-foreground/25 border-muted-foreground/10 cursor-not-allowed border'
+                  ? 'border-border bg-muted/40 text-muted-foreground cursor-not-allowed border'
                   : 'bg-primary hover:bg-primary/90 cursor-pointer text-black'
               }`}
             >
@@ -249,6 +256,6 @@ export default function MakeAssertion() {
           </div>
         </div>
       </m.div>
-    </Container>
+    </div>
   );
 }

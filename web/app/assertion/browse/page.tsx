@@ -6,7 +6,6 @@ import { AnimatePresence, motion as m } from 'motion/react';
 
 import AssertionCard from '@/components/assertion/assertion-card';
 import Header from '@/components/assertion/feed-header';
-import Container from '@/components/common/container';
 import { useAssertions } from '@/lib/assertion-store';
 import { useWallet } from '@/providers/wallet-context';
 import type { AssertionAccount } from '@/types';
@@ -100,7 +99,7 @@ export default function Assertion() {
   }, [allAssertions, currentAddress, quickFilters, ready, sortField, stageFilter]);
 
   return (
-    <Container className="border-muted-foreground/50 flex min-h-screen flex-col border-x border-dashed">
+    <div className="flex min-h-screen flex-col">
       <Header
         sortField={sortField}
         onSortFieldChange={setSortField}
@@ -144,6 +143,6 @@ export default function Assertion() {
           </m.div>
         )}
       </div>
-    </Container>
+    </div>
   );
 }

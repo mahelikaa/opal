@@ -10,7 +10,6 @@ import { AnimatePresence, motion as m } from 'motion/react';
 import DisputeAction from '@/components/assertion/dispute-action';
 import Timeline from '@/components/assertion/timeline';
 import VotingPanel from '@/components/assertion/voting-panel';
-import Container from '@/components/common/container';
 import { Button } from '@/components/ui/button';
 import { getOutcomeLabel, getStageLabel } from '@/lib/assertion-labels';
 import {
@@ -97,8 +96,8 @@ export default function StatementPage() {
         : 'text-zinc-400';
 
   return (
-    <Container className="border-muted-foreground/50 flex h-screen flex-col overflow-hidden border-x border-dashed pt-16">
-      <header className="border-foreground/40 flex h-16 shrink-0 items-center justify-between border-b px-4">
+    <div className="flex h-screen flex-col overflow-hidden pt-16">
+      <header className="border-border flex h-16 shrink-0 items-center justify-between border-b px-4">
         <div className="flex items-center gap-8">
           <div className="flex flex-col gap-0.5">
             <span className="text-muted-foreground font-mono text-[10px] tracking-widest uppercase">
@@ -151,14 +150,16 @@ export default function StatementPage() {
         </div>
       </header>
 
-      <div className="flex min-h-0 w-full flex-1 flex-col items-center gap-6 overflow-y-auto px-6 pt-8 pb-6">
+      <div className="flex min-h-0 w-full flex-1 flex-col items-center overflow-y-auto px-6 py-6">
+        {/* my-auto centers the whole block vertically when it's shorter than the
+            viewport, and degrades to normal scrolling when it isn't. */}
+        <div className="my-auto flex w-full flex-col items-center gap-10">
         <AssertionSection
           assertion={assertion}
           onEvidenceClick={() => setShowEvidenceModal(true)}
         />
 
-        {/* Statement stays pinned at the top; the rest centers in the remaining space. */}
-        <div className="flex w-full flex-1 flex-col items-center justify-center gap-6">
+        <div className="flex w-full flex-col items-center gap-6">
           <DisputeAction
             assertion={assertion}
             userVote={userVote}
@@ -186,6 +187,7 @@ export default function StatementPage() {
             </div>
           )}
         </div>
+        </div>
       </div>
 
       <div className="shrink-0 px-4 pb-4">
@@ -208,19 +210,25 @@ export default function StatementPage() {
               exit={{ scale: 0.95, opacity: 0 }}
               transition={{ duration: 0.2 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-background border-muted-foreground/30 relative mx-4 max-h-96 w-full max-w-2xl overflow-y-auto rounded-md border p-6"
+              className="bg-background border-border relative mx-4 max-h-96 w-full max-w-2xl overflow-y-auto border shadow-2xl shadow-black/60"
             >
-              <div className="via-primary/70 pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent to-transparent" />
-              <button
-                onClick={() => setShowEvidenceModal(false)}
-                className="text-muted-foreground hover:text-foreground absolute top-4 right-4 transition-colors"
-              >
-                <XIcon size={20} />
-              </button>
+              <div className="border-border flex items-center justify-between border-b px-5 py-3">
+                <div className="flex items-center gap-2.5">
+                  <span className="bg-primary size-1.5" />
+                  <h2 className="text-muted-foreground font-mono text-[11px] tracking-[0.2em] uppercase">
+                    Auxiliary Evidence
+                  </h2>
+                </div>
+                <button
+                  onClick={() => setShowEvidenceModal(false)}
+                  className="text-muted-foreground/50 hover:text-foreground transition-colors"
+                  aria-label="Close"
+                >
+                  <XIcon className="size-4" />
+                </button>
+              </div>
 
-              <h2 className="mb-4 text-lg uppercase">Auxiliary Evidence</h2>
-
-              <div className="space-y-4">
+              <div className="space-y-4 p-5">
                 <div>
                   <p className="text-muted-foreground mb-2 font-mono text-xs tracking-widest uppercase">
                     Evidence Hash
@@ -253,7 +261,7 @@ export default function StatementPage() {
           </m.div>
         )}
       </AnimatePresence>
-    </Container>
+    </div>
   );
 }
 
@@ -269,11 +277,11 @@ function AssertionSection({
   return (
     <section className="flex w-full flex-col items-center gap-5 text-center">
       <div className="flex flex-col items-center gap-4">
-        <h1 className="max-w-4xl font-sans text-2xl leading-snug text-balance md:text-3xl">
+        <h1 className="max-w-5xl text-2xl leading-snug text-balance uppercase md:text-4xl">
           {assertion.statement}
         </h1>
 
-        <Button onClick={onEvidenceClick} variant="outline" size="sm">
+        <Button onClick={onEvidenceClick} variant="outline" size="md" className="px-6">
           View Evidence
         </Button>
       </div>
@@ -317,7 +325,7 @@ function LLMSection({ round }: { round: NonNullable<AssertionAccount['llmResolut
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="border-muted-foreground/30 flex h-full flex-col gap-4 border p-5">
+    <section className="border-border flex h-full flex-col gap-4 border p-5">
       <h2 className="text-muted-foreground font-mono text-xs tracking-[0.2em] uppercase">
         {title}
       </h2>

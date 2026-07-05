@@ -23,16 +23,16 @@ Full shadcn token set: `--background`, `--foreground`, `--card`, `--popover`,
 - Light theme: white bg; dark theme: near-black (`oklch(0.1913 0 0)`).
 - `--radius: 0.25rem` base with sm/md/lg/xl derivations; a shadow scale; spacing base
   `0.25rem`.
-- Font vars: `--font-sans: var(--font-hind)` (body, regular weight), `--font-heading:
-  var(--font-khand)` (headings — a base-layer rule sets h1–h6 to Khand bold), `--font-mono`
-  also resolves to Hind — the site ships **no monospace face**; `font-mono` spots rely on
-  `tabular-nums` for alignment. Loaded in `app/font.ts`: local Khand/Hind variable fonts.
-  A base rule also forces `kbd/code/samp` to the sans face. Root font-size is 112.5%.
-
-> ⚠️ **Cleanup note:** in `globals.css`, most token blocks, the `@theme inline` mappings,
-> and the `@layer base` rules are **literally duplicated** (each var defined twice, base
-> rules repeated). Harmless but sloppy — if you touch this file, consider de-duplicating,
-> but don't let it block other work.
+- **Typography is the Geist family only**, from the `geist` npm package (no font files
+  in `public/`): `--font-sans` → **Geist Sans** (body), `--font-mono` → **Geist Mono**
+  (micro-labels, eyebrows, numerics, addresses — the "terminal" accent),
+  `--font-heading` → **Geist Pixel Square** (all h1–h6, via a base-layer rule).
+  `app/font.ts` is the single import point and re-exports the other pixel variants
+  (Grid/Circle/Triangle/Line) for decorative one-offs.
+  - ⚠️ The pixel faces ship a **single 500 weight — never `font-bold` a heading**, and
+    don't add `tracking-*` to headings (the face is already wide; size down instead:
+    page titles max `text-3xl md:text-4xl`).
+  - `kbd/code/samp` use the mono face via a base rule. Root font-size is 100%.
 
 ## Base layer
 
@@ -52,9 +52,16 @@ If you build new input-with-addon UIs, prefer `InputGroup` for consistency.
 
 ## Aesthetic rules (match these in new work)
 
-- Uppercase text with **wide letter-spacing** for labels/eyebrows.
-- **Dashed borders** (`border-dashed`) are reserved for the **outermost page frame only** (the `border-x` page verticals and the navbar lines). All internal borders — cards, tables, panels, dividers, interactive controls — use solid borders.
-- Numerics (bonds, weights, countdowns) use `tabular-nums` — no monospace face is shipped.
+- **Three-tier type system:** pixel headings (uppercase, weight 500, no extra tracking),
+  `font-mono uppercase tracking-widest` micro-labels/eyebrows/chips, and **sentence-case
+  Geist Sans body copy** (`text-sm leading-relaxed`). Body paragraphs are never
+  uppercase — only labels and headings are.
+- **The max-width frame (`Container`, `max-w-400`) with dashed `border-x` verticals is a
+  landing-page-only device** — the landing page and the navbar rendered on it. Every
+  other route is **full-bleed**: no `Container`, no `border-x` (the navbar switches per
+  route via `usePathname`). Horizontal dashed hairlines stay everywhere.
+- **Dashed borders** (`border-dashed`) are reserved for the landing frame and the navbar/section hairlines. All internal borders — cards, tables, panels, dividers, interactive controls — use solid borders.
+- Numerics (bonds, weights, countdowns) use `font-mono tabular-nums`.
 - Phosphor icons only (`@phosphor-icons/react`).
 - Animations via `motion` (`import { m } from 'motion/react'` pattern; `AnimatePresence`
   for enter/exit). Keep transitions subtle.

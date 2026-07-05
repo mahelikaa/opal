@@ -86,7 +86,7 @@ export default function Timeline({ statement }: { statement: AssertionAccount | 
 
   return (
     <div className="w-full">
-      <div className="border-muted-foreground/50 bg-background/85 border px-6 py-4 shadow-lg backdrop-blur-md">
+      <div className="border-border bg-background/85 border px-6 py-4 shadow-lg backdrop-blur-md">
         <span className="text-muted-foreground/75 font-mono text-xs tracking-[0.25em] uppercase">
           Lifecycle
         </span>
@@ -109,7 +109,7 @@ export default function Timeline({ statement }: { statement: AssertionAccount | 
                   />
 
                   {!isLast && (
-                    <span className="border-muted-foreground/50 mx-2 h-px flex-1 border-t border-dashed" />
+                    <span className="border-muted-foreground/30 mx-2 h-px flex-1 border-t border-dashed" />
                   )}
                 </div>
 

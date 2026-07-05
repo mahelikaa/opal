@@ -19,7 +19,7 @@ export default function VotingPanel({ round, votingClosed, userVote }: VotingPan
   const totalWeight = Number(round.totalValidWeight);
 
   return (
-    <section className="border-muted-foreground/30 flex h-full flex-col gap-4 border p-5">
+    <section className="border-border flex h-full flex-col gap-4 border p-5">
       <h2 className="text-muted-foreground font-mono text-xs tracking-[0.2em] uppercase">
         Vote Tally
       </h2>

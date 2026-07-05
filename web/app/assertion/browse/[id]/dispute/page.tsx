@@ -8,7 +8,6 @@ import { AnimatePresence, motion as m } from 'motion/react';
 
 import SectionHeader from '@/components/assertion/section-header';
 import Warning from '@/components/assertion/warning';
-import Container from '@/components/common/container';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { getOutcomeLabel } from '@/lib/assertion-labels';
@@ -80,7 +79,7 @@ export default function DisputeAssertion() {
 
   if (!windowOpen) {
     return (
-      <Container className="border-muted-foreground/50 flex min-h-screen flex-col items-center justify-center gap-4 border-x border-dashed px-4">
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4 px-4">
         <h1 className="text-xl uppercase md:text-2xl">Dispute Unavailable</h1>
         <p className="text-muted-foreground text-sm leading-relaxed">
           {mode === null
@@ -94,7 +93,7 @@ export default function DisputeAssertion() {
         >
           Back to Assertion
         </Button>
-      </Container>
+      </div>
     );
   }
 
@@ -137,16 +136,18 @@ export default function DisputeAssertion() {
   const toggle = (s: Section) => setOpen((prev) => (prev === s ? 'reason' : s));
 
   return (
-    <Container className="border-muted-foreground/50 relative flex h-screen flex-col overflow-hidden border-x border-dashed px-4 pt-18 pb-4">
+    <div className="relative flex h-screen flex-col overflow-hidden px-4 pt-18 pb-4">
       <m.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35, ease: 'easeOut' }}
         className="relative z-10 mt-4 flex h-full flex-col overflow-hidden"
       >
-        <div className="bg-background border-muted-foreground/50 flex h-full flex-col overflow-hidden border">
+        <div className="bg-background border-border flex h-full flex-col overflow-hidden border">
           <SectionHeader
             label="Reason"
+            step="01"
+            complete={Boolean(reason.trim())}
             open={open === 'reason'}
             onClick={() => toggle('reason')}
             peek={reason || undefined}
@@ -197,6 +198,8 @@ export default function DisputeAssertion() {
 
           <SectionHeader
             label={mode === 'dispute' ? 'Claim Under Dispute' : 'LLM Resolution Under Challenge'}
+            step="02"
+            complete
             open={open === 'claim'}
             onClick={() => toggle('claim')}
             peek={open !== 'claim' ? assertion.statement : undefined}
@@ -227,6 +230,8 @@ export default function DisputeAssertion() {
 
           <SectionHeader
             label="Stake Summary"
+            step="03"
+            complete={Boolean(reason.trim())}
             open={open === 'summary'}
             onClick={() => toggle('summary')}
             peek={`${bond} USDC · challenging ${challengedOutcome}`}
@@ -253,7 +258,7 @@ export default function DisputeAssertion() {
             </div>
           </Collapse>
 
-          <div className="border-muted-foreground/50 mt-auto border-t p-5">
+          <div className="border-border mt-auto border-t p-5">
             <m.button
               whileHover={buttonDisabled ? {} : { scale: 1.005 }}
               whileTap={buttonDisabled ? {} : { scale: 0.995 }}
@@ -265,9 +270,9 @@ export default function DisputeAssertion() {
                 }
                 handleSubmit();
               }}
-              className={`w-full py-3 font-mono text-xs tracking-widest uppercase transition-colors ${
+              className={`w-full py-4 font-mono text-sm tracking-[0.2em] uppercase transition-colors ${
                 buttonDisabled
-                  ? 'bg-muted/30 text-muted-foreground/25 border-muted-foreground/10 cursor-not-allowed border'
+                  ? 'border-border bg-muted/40 text-muted-foreground cursor-not-allowed border'
                   : 'bg-destructive hover:bg-destructive/90 cursor-pointer text-white'
               }`}
             >
@@ -276,7 +281,7 @@ export default function DisputeAssertion() {
           </div>
         </div>
       </m.div>
-    </Container>
+    </div>
   );
 }
 
@@ -315,12 +320,12 @@ function SummaryMeta({
   accent?: boolean;
 }) {
   return (
-    <div className="min-w-0">
-      <div className="text-muted-foreground/75 font-mono text-[10px] tracking-[0.2em] uppercase">
+    <div className="border-border min-w-0 border-l pl-4">
+      <div className="text-muted-foreground/75 font-mono text-[11px] tracking-[0.2em] uppercase">
         {label}
       </div>
       <div
-        className={`mt-1 font-mono text-sm tabular-nums ${accent ? 'text-primary' : 'text-foreground'}`}
+        className={`mt-1 font-mono text-base tabular-nums ${accent ? 'text-primary' : 'text-foreground'}`}
       >
         {value}
       </div>

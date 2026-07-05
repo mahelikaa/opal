@@ -265,7 +265,7 @@ function Panel({
   children?: ReactNode;
 }) {
   return (
-    <section className="border-muted-foreground/40 bg-card/40 w-full border px-8 py-7 md:px-10">
+    <section className="border-border bg-card/40 w-full border px-8 py-7 md:px-10">
       <div className="flex flex-col items-center gap-3 text-center">
         <span className="text-primary font-mono text-xs tracking-[0.25em] uppercase">
           {eyebrow}

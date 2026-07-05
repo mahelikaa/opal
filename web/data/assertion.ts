@@ -12,7 +12,7 @@ export const ASSERTIONS: AssertionAccount[] = [
     bondAmountPUSD: ASSERTION_BOND_PUSD,
     state: 'Asserted',
     livenessDeadline: '2026-08-15T14:00:00Z', // future — dispute window open
-    outcome: 'True',
+    outcome: null,
     finalizedAt: null,
     disputeCount: 0,
     llmDispute: null,
@@ -31,7 +31,7 @@ export const ASSERTIONS: AssertionAccount[] = [
     bondAmountPUSD: ASSERTION_BOND_PUSD,
     state: 'AssertedLLM',
     livenessDeadline: '2026-04-20T10:00:00Z',
-    outcome: 'True',
+    outcome: null,
     finalizedAt: null,
     disputeCount: 1,
     llmDispute: {
@@ -65,7 +65,7 @@ export const ASSERTIONS: AssertionAccount[] = [
     bondAmountPUSD: ASSERTION_BOND_PUSD,
     state: 'Voting',
     livenessDeadline: '2026-04-10T12:00:00Z',
-    outcome: 'True',
+    outcome: null,
     finalizedAt: null,
     disputeCount: 2,
     llmDispute: {
@@ -80,7 +80,7 @@ export const ASSERTIONS: AssertionAccount[] = [
     voteDispute: {
       pubkey: 'VTDd4Pq0rQsTvW6zJeLiMjYrXsVmEdBo',
       disputer: 'Bg2fRmI6hSnKmPoT8bDzEaGcIfTjZxUl',
-      challengedLLMResolution: 'TooEarly',
+      challengedLLMResolution: 'Unresolvable',
       bondAmountPUSD: ASSERTION_BOND_PUSD,
       createdAt: '2026-04-19T14:00:00Z',
       settlementResolution: null,
@@ -89,8 +89,8 @@ export const ASSERTIONS: AssertionAccount[] = [
     },
     llmResolutionRound: {
       pubkey: 'LLMr4Qr1sRtUwX7aKfMjNkZsYtWnFeCp',
-      outcomeCode: 2,
-      outcome: 'TooEarly',
+      outcomeCode: 3,
+      outcome: 'Unresolvable',
       promptHash: 'e7j2g6h5i8f1435j0e9g7h6f5d2j1e13',
       resolvedAt: '2026-04-17T11:00:00Z',
       challengeDeadline: '2026-04-19T11:00:00Z',
@@ -100,11 +100,11 @@ export const ASSERTIONS: AssertionAccount[] = [
       votingStartsAt: '2026-04-20T12:00:00Z',
       votingDeadline: '2026-05-01T12:00:00Z',
       totalValidWeight: 48200n,
+      // False holds ~69% of the weight — above the 6700 bps supermajority.
       aggregateVotes: {
         True: 0,
-        False: 31400,
-        TooEarly: 12800,
-        Unresolvable: 4000,
+        False: 33400,
+        Unresolvable: 14800,
       },
       finalOutcome: 'False',
     },
@@ -120,7 +120,7 @@ export const ASSERTIONS: AssertionAccount[] = [
     bondAmountPUSD: ASSERTION_BOND_PUSD,
     state: 'PendingLLM',
     livenessDeadline: '2026-04-25T10:00:00Z',
-    outcome: 'True',
+    outcome: null,
     finalizedAt: null,
     disputeCount: 1,
     llmDispute: {
@@ -136,7 +136,7 @@ export const ASSERTIONS: AssertionAccount[] = [
     llmResolutionRound: {
       pubkey: 'LLMr0Za0bAcCeG6jToUpVsHaHcFwOlMy',
       outcomeCode: 0,
-      outcome: 'True', // FIXED
+      outcome: null, // pending — the resolver has not posted yet
       promptHash: 'k3p8m2n1o4l7091p6k5m3n2l1j8p7k19',
       resolvedAt: null, // FIXED
       challengeDeadline: null, // FIXED
@@ -154,7 +154,7 @@ export const ASSERTIONS: AssertionAccount[] = [
     bondAmountPUSD: ASSERTION_BOND_PUSD,
     state: 'PendingVote',
     livenessDeadline: '2026-04-18T10:00:00Z',
-    outcome: 'True',
+    outcome: null,
     finalizedAt: null,
     disputeCount: 2,
     llmDispute: {
@@ -192,10 +192,9 @@ export const ASSERTIONS: AssertionAccount[] = [
       aggregateVotes: {
         True: 0,
         False: 0,
-        TooEarly: 0,
         Unresolvable: 0,
       },
-      finalOutcome: 'True',
+      finalOutcome: null,
     },
     createdAt: '2026-04-17T08:00:00Z',
   },
@@ -243,32 +242,33 @@ export const ASSERTIONS: AssertionAccount[] = [
     bondAmountPUSD: ASSERTION_BOND_PUSD,
     state: 'Resolved',
     livenessDeadline: '2026-02-20T12:00:00Z',
-    outcome: 'TooEarly',
+    outcome: 'Unresolvable',
     finalizedAt: '2026-02-24T11:30:00Z',
     disputeCount: 2,
+    // Unresolvable settles no-fault: both bonds returned, disputeCorrect stays null.
     llmDispute: {
       pubkey: 'LLMd7IjJkLmNoP5sCxDyEaQjQlOfXuVh',
       disputer: 'Uf7dHcY7bLkCeGgL8sUpYrZtBuLkUqNfP',
       bondAmountPUSD: ASSERTION_BOND_PUSD,
       createdAt: '2026-02-21T07:00:00Z',
-      settlementResolution: 'TooEarly',
-      disputeCorrect: true,
+      settlementResolution: 'Unresolvable',
+      disputeCorrect: null,
       settled: true,
     },
     voteDispute: {
       pubkey: 'VTDd8JkKlMnOpQ6tDyEzFbRkRmPgYwWi',
       disputer: 'Tg6cGbX6aKjBdFfK7rToXqYsAtKjTpMeO',
-      challengedLLMResolution: 'TooEarly',
+      challengedLLMResolution: 'Unresolvable',
       bondAmountPUSD: ASSERTION_BOND_PUSD,
       createdAt: '2026-02-22T10:00:00Z',
-      settlementResolution: 'TooEarly',
-      disputeCorrect: false,
+      settlementResolution: 'Unresolvable',
+      disputeCorrect: null,
       settled: true,
     },
     llmResolutionRound: {
       pubkey: 'LLMr9KlLmNoPqR7uEzFaGcSlSnQhZxXj',
-      outcomeCode: 2,
-      outcome: 'TooEarly',
+      outcomeCode: 3,
+      outcome: 'Unresolvable',
       promptHash: 't2y7v1w0x3u6980y5t4v2w1u0s7y6t28',
       resolvedAt: '2026-02-22T08:30:00Z',
       challengeDeadline: '2026-02-23T08:30:00Z',
@@ -278,13 +278,13 @@ export const ASSERTIONS: AssertionAccount[] = [
       votingStartsAt: '2026-02-23T12:00:00Z',
       votingDeadline: '2026-02-24T10:00:00Z',
       totalValidWeight: 38700n,
+      // Unresolvable holds ~83% of the weight — above the supermajority.
       aggregateVotes: {
         True: 2300,
         False: 4200,
-        TooEarly: 28200,
-        Unresolvable: 4000,
+        Unresolvable: 32200,
       },
-      finalOutcome: 'TooEarly',
+      finalOutcome: 'Unresolvable',
     },
     createdAt: '2026-02-18T09:30:00Z',
   },
@@ -306,8 +306,9 @@ export const ASSERTIONS: AssertionAccount[] = [
       disputer: 'Sh5bFaW5zJiAcEeJ6qSnWpXrZsJiSoLdN',
       bondAmountPUSD: ASSERTION_BOND_PUSD,
       createdAt: '2026-01-16T09:00:00Z',
+      // No-fault settlement — Unresolvable returns the bond without slashing.
       settlementResolution: 'Unresolvable',
-      disputeCorrect: true,
+      disputeCorrect: null,
       settled: true,
     },
     voteDispute: null,
@@ -332,7 +333,7 @@ export const ASSERTIONS: AssertionAccount[] = [
     bondAmountPUSD: ASSERTION_BOND_PUSD,
     state: 'Asserted',
     livenessDeadline: '2026-06-28T12:00:00Z', // expired — finalize_undisputed available
-    outcome: 'True',
+    outcome: null,
     finalizedAt: null,
     disputeCount: 0,
     llmDispute: null,
@@ -351,7 +352,7 @@ export const ASSERTIONS: AssertionAccount[] = [
     bondAmountPUSD: ASSERTION_BOND_PUSD,
     state: 'AssertedLLM',
     livenessDeadline: '2026-06-05T10:00:00Z',
-    outcome: 'True',
+    outcome: null,
     finalizedAt: null,
     disputeCount: 1,
     llmDispute: {

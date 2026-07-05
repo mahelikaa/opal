@@ -34,6 +34,7 @@ central open task. See [`status.md`](status.md) and
 | [`status.md`](status.md) | What's done, what's stubbed, known bugs/cleanup items |
 | [`integration-roadmap.md`](integration-roadmap.md) | The plan to replace mock data with real Anchor/RPC calls |
 | [`conventions.md`](conventions.md) | Rules an agent must follow when editing this codebase |
+| [`changelog.md`](changelog.md) | Branch map + running log of frontend work streams (landed and planned) |
 
 ## Quick facts
 

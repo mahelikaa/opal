@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 
-import Container from '@/components/common/container';
 import Navbar from '@/components/common/navbar';
 import { Providers } from '@/providers/providers';
 
@@ -27,9 +26,7 @@ export default function RootLayout({
     >
       <body className="relative overflow-x-clip">
         <Providers>
-          <Container className="border-muted-foreground/50 border-x border-dashed">
-            <Navbar />
-          </Container>
+          <Navbar />
           {children}
         </Providers>
       </body>

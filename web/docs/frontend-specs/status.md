@@ -60,7 +60,7 @@ IDL, no program-ID/PDA derivation, no RPC account reads, no transaction submissi
 | Open vote | `dispute-action` → `openVote` (store) | Store update only; mirrors `open_vote`; sets a 5-min mock voting window |
 | Cast vote | vote screen (`/assertion/browse/[id]/vote`) → `castVote` (store) | Store update; `MOCK_VOTE_WEIGHT=5000`; user vote tracked locally via `useUserVote`; disclaimer that MagicBlock TWAV is not wired |
 | Finalize (undisputed/LLM/vote) | `dispute-action` → `finalizeAssertion` (store) | Store update; leading outcome wins (no supermajority rule); settles dispute fields locally |
-| User dashboard stats | `/u/[address]/*` | Derived from the static mock array (not the store) via `as any` casts |
+| User dashboard stats | `/u/[address]/*` | Derived from the client store (all tabs read `useAssertions()`), typed — but still mock data underneath |
 
 Also note protocol-side placeholders that the UI should not over-promise on: LLM
 resolution is a 3-feed Switchboard council (mocked in tests); voting is a MagicBlock
@@ -69,17 +69,13 @@ distributed. See `../../../README.md` §"Current State" and `../../../docs/`.
 
 ## 🐞 Known bugs / cleanup items
 
-- `u/[address]/votes/page.tsx` — `MISALIGNED` status defined but **never produced** by
-  `deriveVotes` (only ACTIVE/ALIGNED). Voting-alignment logic is partial.
-- `/u/[address]` sub-pages (assertions/disputes/votes/earnings) still read from the
-  static mock array — the **overview page now reads the client store**
-  (`filterAssertionsByAddress(address, useAssertions())`), the rest should follow.
-- `app/globals.css` — most token/`@theme inline`/base blocks are **literally duplicated**.
 - `common/logo.tsx` — the `Logo` component appears **unused** (navbar uses
   `/img/logo.svg` via `next/image`).
-- Dashboard sub-pages use frequent **`as any`** casts — the overview page is now fully
-  typed; tighten the rest when the real data layer lands.
 - Unused `m` (motion) imports in a couple of landing/common files.
+
+Fixed on `frontend/design-revamp` (see [`changelog.md`](changelog.md)): dashboard
+sub-pages now read the client store with typed derivations (no `as any`);
+`MISALIGNED` vote status is actually produced; `globals.css` duplication removed.
 
 ## 🔜 Not started
 
