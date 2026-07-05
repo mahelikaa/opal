@@ -7,12 +7,14 @@ import { AnimatePresence, motion as m } from 'motion/react';
 import AssertionCard from '@/components/assertion/assertion-card';
 import Header from '@/components/assertion/feed-header';
 import Container from '@/components/common/container';
-import { ASSERTIONS } from '@/data/assertion';
+import { useAssertions } from '@/lib/assertion-store';
 import { useWallet } from '@/providers/wallet-context';
+import type { AssertionAccount } from '@/types';
 import type { QuickFilter, SortField, StageFilter } from '@/types/filters';
 
 export default function Assertion() {
   const { ready, currentAddress } = useWallet();
+  const allAssertions = useAssertions();
   const [sortField, setSortField] = useState<SortField>('newest');
   const [stageFilter, setStageFilter] = useState<StageFilter>('All');
   const [quickFilters, setQuickFilters] = useState<QuickFilter[]>([]);
@@ -38,7 +40,7 @@ export default function Assertion() {
       Finalized: ['Resolved'],
     };
 
-    const matchesQuickFilter = (assertion: (typeof ASSERTIONS)[number], filter: QuickFilter) => {
+    const matchesQuickFilter = (assertion: AssertionAccount, filter: QuickFilter) => {
       if (filter === 'onlyDisputed') {
         return assertion.disputeCount > 0;
       }
@@ -64,7 +66,7 @@ export default function Assertion() {
       return assertion.finalizedAt === null;
     };
 
-    const filtered = ASSERTIONS.filter((assertion) => {
+    const filtered = allAssertions.filter((assertion) => {
       const matchesStage =
         stageFilter === 'All' || stageGroups[stageFilter].includes(assertion.state);
       const matchesQuickFilters = quickFilters.every((filter) =>
@@ -95,7 +97,7 @@ export default function Assertion() {
 
       return sortField === 'oldest' ? createdAtDelta : createdAtDelta * -1;
     });
-  }, [currentAddress, quickFilters, ready, sortField, stageFilter]);
+  }, [allAssertions, currentAddress, quickFilters, ready, sortField, stageFilter]);
 
   return (
     <Container className="border-muted-foreground/50 flex min-h-screen flex-col border-x border-dashed">

@@ -11,6 +11,7 @@ import { Button } from '../ui/button';
 import NavbarMobile from './mobile-navbar';
 import { NavbarAuth } from './navbar-auth';
 import { SearchDialog } from './search-dialog';
+import Image from 'next/image';
 
 export default function Navbar() {
   const [isMobileNavbarOpen, setIsMobileNavbarOpen] = useState<boolean>(false);
@@ -31,21 +32,29 @@ export default function Navbar() {
   const handleCloseSearch = useCallback(() => setIsSearchOpen(false), []);
 
   return (
-    <div className="bg-background fixed inset-x-0 top-0 z-30 overflow-x-clip">
+    <div className="bg-background/85 fixed inset-x-0 top-0 z-30 overflow-x-clip backdrop-blur-md">
       <Container className="border-muted-foreground/50 relative flex h-16 items-center justify-between border-x border-dashed px-4">
-        <Link href="/">
+        <Link href="/" className="flex items-center gap-0.5">
+        <span className="size-10 relative overflow-hidden -translate-y-0.75">
+          <Image
+          src="/img/logo.svg"
+          fill
+          alt="Opal Logo"
+          className="object-cover scale-175"
+          />
+          </span>
           <span className="text-xl font-semibold tracking-tight uppercase">Opal</span>
         </Link>
         <div className="hidden items-center gap-4 md:flex">
           <Button
             type="button"
-            variant="outline"
+            variant="ghost"
             size="sm"
             onClick={() => setIsSearchOpen(true)}
-            className="w-64 justify-between px-3"
+            className="bg-muted/40 hover:bg-muted/70 w-64 justify-between px-3 font-normal"
           >
             <div className="text-muted-foreground text-xs">Search</div>
-            <kbd className="bg-muted rounded text-xs font-semibold">⌘ + K</kbd>
+            <kbd className="bg-muted text-muted-foreground rounded text-xs font-semibold">⌘ + K</kbd>
           </Button>
           <NavbarAuth layout="desktop" />
         </div>

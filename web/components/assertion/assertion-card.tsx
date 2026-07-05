@@ -48,7 +48,7 @@ export default function AssertionCard({ data }: { data: AssertionAccount }) {
         layout
         layoutId={`statement-card-${data.id}`}
         className={
-          'group ring-muted-foreground/20 hover:ring-muted-foreground/40 bg-muted hover:bg-accent relative flex h-auto w-full cursor-pointer flex-col gap-0 overflow-hidden ring transition-all duration-200 ease-in-out hover:shadow-md'
+          'group ring-muted-foreground/20 hover:ring-primary/40 bg-muted hover:bg-accent relative flex h-auto w-full cursor-pointer flex-col gap-0 overflow-hidden ring transition-all duration-200 ease-in-out hover:-translate-y-0.5 hover:shadow-lg'
         }
       >
         {/* Row 1: Statement + Finalization Badge */}

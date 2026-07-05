@@ -11,7 +11,7 @@ export const ASSERTIONS: AssertionAccount[] = [
     auxiliaryUrl: 'https://arweave.net/abc123',
     bondAmountPUSD: ASSERTION_BOND_PUSD,
     state: 'Asserted',
-    livenessDeadline: '2026-05-10T14:00:00Z',
+    livenessDeadline: '2026-08-15T14:00:00Z', // future — dispute window open
     outcome: 'True',
     finalizedAt: null,
     disputeCount: 0,
@@ -50,7 +50,7 @@ export const ASSERTIONS: AssertionAccount[] = [
       outcome: 'False',
       promptHash: 'c5h0e4f3g6d9213h8c7e5f4d3b0h9c11',
       resolvedAt: '2026-04-22T09:00:00Z',
-      challengeDeadline: '2026-05-10T09:00:00Z',
+      challengeDeadline: '2026-08-10T09:00:00Z', // future — challenge window open
     },
     voteResolutionRound: null,
     createdAt: '2026-04-18T16:00:00Z',
@@ -322,13 +322,69 @@ export const ASSERTIONS: AssertionAccount[] = [
     voteResolutionRound: null,
     createdAt: '2026-01-12T11:00:00Z',
   },
+
+  {
+    id: '4jWbC6yZ9hXiDeK4pRoTuQgAeSmNjWqR',
+    asserter: 'Gm7oXsQ4rBwSuUvC6jNdOkPlRnBtIgFv',
+    statement: 'Bitcoin traded above $100k in June 2026',
+    auxiliaryHash: 'w5b0y4z3a6x9213b8w7y5z4x3v0b9w31',
+    auxiliaryUrl: 'https://arweave.net/hij456',
+    bondAmountPUSD: ASSERTION_BOND_PUSD,
+    state: 'Asserted',
+    livenessDeadline: '2026-06-28T12:00:00Z', // expired — finalize_undisputed available
+    outcome: 'True',
+    finalizedAt: null,
+    disputeCount: 0,
+    llmDispute: null,
+    voteDispute: null,
+    llmResolutionRound: null,
+    voteResolutionRound: null,
+    createdAt: '2026-06-21T12:00:00Z',
+  },
+
+  {
+    id: '5kXcD7zA0iYjEfL5qSpUvRhBfTnOkXrS',
+    asserter: 'Hn8pYtR5sCxTvVwD7kOeQlQmSoCuJhGw',
+    statement: 'EU approved a spot Ethereum ETF before June 2026',
+    auxiliaryHash: 'x6c1z5a4b7y0324c9x8z6a5y4w1c0x32',
+    auxiliaryUrl: 'https://arweave.net/klm789',
+    bondAmountPUSD: ASSERTION_BOND_PUSD,
+    state: 'AssertedLLM',
+    livenessDeadline: '2026-06-05T10:00:00Z',
+    outcome: 'True',
+    finalizedAt: null,
+    disputeCount: 1,
+    llmDispute: {
+      pubkey: 'LLMd2ReSfTgUhV0xJdKeLfWpWsUlDbBm',
+      disputer: 'In9qZuS6tDyUwWxE8lPfRmRnTpDvKiHx',
+      bondAmountPUSD: ASSERTION_BOND_PUSD,
+      createdAt: '2026-06-06T09:00:00Z',
+      settlementResolution: null,
+      disputeCorrect: null,
+      settled: false,
+    },
+    voteDispute: null,
+    llmResolutionRound: {
+      pubkey: 'LLMr3SfTgUhViW1yKeLfMgXqXtVmEcCn',
+      outcomeCode: 1,
+      outcome: 'False',
+      promptHash: 'y7d2a6b5c8z1435d0y9a7b6z5x2d1y33',
+      resolvedAt: '2026-06-08T10:00:00Z',
+      challengeDeadline: '2026-06-10T10:00:00Z', // expired — finalize_llm_resolution available
+    },
+    voteResolutionRound: null,
+    createdAt: '2026-06-04T08:00:00Z',
+  },
 ];
 
-export function filterAssertionsByAddress(address?: string | string[] | null) {
+export function filterAssertionsByAddress(
+  address?: string | string[] | null,
+  source: AssertionAccount[] = ASSERTIONS
+) {
   const normalized = Array.isArray(address) ? address[0] : address;
   if (!normalized) return [];
 
-  return ASSERTIONS.filter((assertion) => {
+  return source.filter((assertion) => {
     if (assertion.asserter === normalized) return true;
     if (assertion.llmDispute?.disputer === normalized) return true;
     if (assertion.voteDispute?.disputer === normalized) return true;

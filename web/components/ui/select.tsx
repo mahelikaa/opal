@@ -76,7 +76,7 @@ function SelectContent({
           data-slot="select-content"
           data-align-trigger={alignItemWithTrigger}
           className={cn(
-            'border-muted-foreground/50 bg-muted/95 text-popover-foreground ring-foreground/10 dark:bg-muted/85 data-[side=bottom]:slide-in-from-top-2 data-[side=inline-end]:slide-in-from-left-2 data-[side=inline-start]:slide-in-from-right-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 relative isolate z-50 max-h-(--available-height) w-(--anchor-width) min-w-36 origin-(--transform-origin) overflow-x-hidden overflow-y-auto rounded-md border border-dashed shadow-lg ring-1 backdrop-blur-[2px] duration-150 data-[align-trigger=true]:animate-none',
+            'border-muted-foreground/50 bg-muted/95 text-popover-foreground ring-foreground/10 dark:bg-muted/85 data-[side=bottom]:slide-in-from-top-2 data-[side=inline-end]:slide-in-from-left-2 data-[side=inline-start]:slide-in-from-right-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 relative isolate z-50 max-h-(--available-height) w-(--anchor-width) min-w-36 origin-(--transform-origin) overflow-x-hidden overflow-y-auto rounded-md border shadow-lg ring-1 backdrop-blur-[2px] duration-150 data-[align-trigger=true]:animate-none',
             className
           )}
           {...props}
@@ -106,7 +106,7 @@ function SelectItem({ className, children, ...props }: SelectPrimitive.Item.Prop
     <SelectPrimitive.Item
       data-slot="select-item"
       className={cn(
-        'border-border/60 data-highlighted:bg-accent/70 data-highlighted:text-accent-foreground data-selected:bg-primary/10 data-selected:text-foreground relative flex w-full cursor-default items-center gap-1.5 rounded-none border-b border-dashed py-1.5 pr-2 pl-2 text-sm outline-hidden transition-[background-color,border-color,color] select-none first:rounded-t-sm last:rounded-b-sm last:border-b-0 data-disabled:pointer-events-none data-disabled:opacity-50 *:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2',
+        'border-border/60 data-highlighted:bg-accent/70 data-highlighted:text-accent-foreground data-selected:bg-primary/10 data-selected:text-foreground relative flex w-full cursor-default items-center gap-1.5 rounded-none border-b py-1.5 pr-2 pl-2 text-sm outline-hidden transition-[background-color,border-color,color] select-none first:rounded-t-sm last:rounded-b-sm last:border-b-0 data-disabled:pointer-events-none data-disabled:opacity-50 *:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2',
         className
       )}
       {...props}

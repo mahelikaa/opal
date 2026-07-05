@@ -1,14 +1,18 @@
 import localFont from 'next/font/local';
 
-export const Excon = localFont({
-  src: '../public/fonts/Excon-Variable.woff2',
-  variable: '--font-jetbrains',
+// Heading face — condensed, used bold via the base-layer h1–h6 rule in globals.css.
+export const Khand = localFont({
+  src: '../public/fonts/Khand-Variable.woff2',
+  variable: '--font-khand',
+  weight: '300 700',
+  display: 'swap',
 });
 
-export const Disket = localFont({
-  src: [
-    { path: '../public/fonts/JetBrainsMono-Variable.woff2', weight: '400', style: 'normal' },
-    // { path: '../public/fonts/Disket-Mono-Bold.ttf', weight: '700', style: 'normal' },
-  ],
-  variable: '--font-disket',
+// Body face — regular weight. Also backs the `font-mono` utility (tabular-nums where
+// alignment matters) since the site no longer ships a monospace face.
+export const Hind = localFont({
+  src: '../public/fonts/Hind-Variable.woff2',
+  variable: '--font-hind',
+  weight: '300 700',
+  display: 'swap',
 });

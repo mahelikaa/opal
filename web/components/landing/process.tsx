@@ -1,5 +1,6 @@
 'use client';
 import { motion as m } from 'motion/react';
+import CornerMarkers from '../common/corner-markers';
 
 export default function Process() {
   return (
@@ -10,8 +11,8 @@ export default function Process() {
         </h2>
 
         <div className="grid gap-4 md:grid-cols-3">
-          <article className="border-border/50 hover:border-border bg-background/70 group min-h-70 border border-dashed py-6 shadow-sm backdrop-blur transition duration-300 ease-out">
-            <header className="border-border/50 group-hover:border-border flex items-center justify-between border-b border-dashed px-6 pb-4">
+          <article className="border-border/50 hover:border-border bg-background/70 group min-h-70 border py-6 shadow-sm backdrop-blur transition duration-300 ease-out">
+            <header className="border-border/50 group-hover:border-border flex items-center justify-between border-b px-6 pb-4">
               <span className="text-muted-foreground text-xs font-semibold tracking-[0.35em] uppercase">
                 01
               </span>
@@ -26,8 +27,8 @@ export default function Process() {
               </p>
             </div>
           </article>
-          <article className="border-border/50 hover:border-border bg-background/70 group min-h-80 border border-dashed py-6 shadow-sm backdrop-blur transition duration-300 ease-out">
-            <header className="border-border/50 group-hover:border-border flex items-center justify-between border-b border-dashed px-6 pb-4">
+          <article className="border-border/50 hover:border-border bg-background/70 group min-h-80 border py-6 shadow-sm backdrop-blur transition duration-300 ease-out">
+            <header className="border-border/50 group-hover:border-border flex items-center justify-between border-b px-6 pb-4">
               <span className="text-muted-foreground text-xs font-semibold tracking-[0.35em] uppercase">
                 02
               </span>
@@ -42,8 +43,8 @@ export default function Process() {
               </p>
             </div>
           </article>
-          <article className="border-border/50 hover:border-border bg-background/70 group min-h-80 border border-dashed py-6 shadow-sm backdrop-blur transition duration-300 ease-out">
-            <header className="border-border/50 group-hover:border-border flex items-center justify-between border-b border-dashed px-6 pb-4">
+          <article className="border-border/50 hover:border-border bg-background/70 group min-h-80 border py-6 shadow-sm backdrop-blur transition duration-300 ease-out">
+            <header className="border-border/50 group-hover:border-border flex items-center justify-between border-b px-6 pb-4">
               <span className="text-muted-foreground text-xs font-semibold tracking-[0.35em] uppercase">
                 03
               </span>
@@ -65,26 +66,7 @@ export default function Process() {
           fully resolved
         </p>
 
-        <m.span
-          animate={{ opacity: [0.5, 1, 0.5] }}
-          transition={{ duration: 0.2, repeat: Infinity }}
-          className="border-primary absolute bottom-4 left-4 z-20 size-4 border-b border-l"
-        />
-        <m.span
-          animate={{ opacity: [0.5, 1, 0.5] }}
-          transition={{ duration: 0.2, repeat: Infinity }}
-          className="border-primary absolute top-6 left-4 z-20 size-4 border-t border-l"
-        />
-        <m.span
-          animate={{ opacity: [0.5, 1, 0.5] }}
-          transition={{ duration: 0.2, repeat: Infinity }}
-          className="border-primary absolute right-4 bottom-4 z-20 size-4 border-r border-b"
-        />
-        <m.span
-          animate={{ opacity: [0.5, 1, 0.5] }}
-          transition={{ duration: 0.2, repeat: Infinity }}
-          className="border-primary absolute top-6 right-4 z-20 size-4 border-t border-r"
-        />
+      <CornerMarkers/>
       </section>
       <span className="border-muted-foreground/50 pointer-events-none absolute right-0 left-0 z-20 h-0.5 w-screen border-b border-dashed" />
     </>

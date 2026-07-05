@@ -4,72 +4,122 @@ import Link from 'next/link';
 import { notFound, useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-import { LinkBreakIcon, XIcon } from '@phosphor-icons/react';
+import { XIcon } from '@phosphor-icons/react';
 import { AnimatePresence, motion as m } from 'motion/react';
 
+import DisputeAction from '@/components/assertion/dispute-action';
 import Timeline from '@/components/assertion/timeline';
+import VotingPanel from '@/components/assertion/voting-panel';
 import Container from '@/components/common/container';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { ASSERTIONS } from '@/data/assertion';
-import { getTimeRemaining } from '@/lib/helpers';
-import type { ResolutionOutcome } from '@/types';
+import { getOutcomeLabel, getStageLabel } from '@/lib/assertion-labels';
+import {
+  finalizeAssertion,
+  openVote,
+  submitLlmResolution,
+  useAssertions,
+  useUserVote,
+} from '@/lib/assertion-store';
+import { getTimeRemaining, isDeadlinePast } from '@/lib/helpers';
+import { cn } from '@/lib/utils';
+import type { AssertionAccount, AssertionState } from '@/types';
+
+const DEADLINE_LABELS: Record<AssertionState, string> = {
+  Asserted: 'Liveness Window',
+  PendingLLM: 'Awaiting LLM',
+  AssertedLLM: 'Challenge Window',
+  PendingVote: 'Vote Setup',
+  Voting: 'Voting Window',
+  Resolved: 'Finalized',
+};
+
+const STAGE_COLORS: Record<AssertionState, string> = {
+  Asserted: 'text-orange-300',
+  PendingLLM: 'text-yellow-300',
+  AssertedLLM: 'text-yellow-300',
+  PendingVote: 'text-purple-300',
+  Voting: 'text-blue-300',
+  Resolved: 'text-lime-400',
+};
 
 export default function StatementPage() {
   const { id } = useParams();
   const idStr = Array.isArray(id) ? id[0] : id;
-  const assertion = ASSERTIONS.find((s) => s.id === idStr);
+  const assertions = useAssertions();
+  const assertion = assertions.find((s) => s.id === idStr);
 
-  if (!assertion) {
+  if (!assertion || !idStr) {
     notFound();
   }
 
-  const [remainingTime, setRemainingTime] = useState(() =>
-    getTimeRemaining(assertion.livenessDeadline)
-  );
+  const userVote = useUserVote(idStr);
+
+  const activeDeadline =
+    assertion.state === 'AssertedLLM'
+      ? (assertion.llmResolutionRound?.challengeDeadline ?? undefined)
+      : assertion.state === 'Voting'
+        ? (assertion.voteResolutionRound?.votingDeadline ?? undefined)
+        : assertion.livenessDeadline;
 
   const [showEvidenceModal, setShowEvidenceModal] = useState(false);
-  const [showDisputeModal, setShowDisputeModal] = useState(false);
-  const [disputeReason, setDisputeReason] = useState('');
+
+  // 1s ticker so countdowns and deadline-gated actions re-evaluate live.
+  const [, setTick] = useState(0);
   useEffect(() => {
-    const interval = setInterval(() => {
-      setRemainingTime(getTimeRemaining(assertion.livenessDeadline));
-    }, 1000);
-
+    const interval = setInterval(() => setTick((tick) => tick + 1), 1000);
     return () => clearInterval(interval);
-  }, [assertion.livenessDeadline]);
+  }, []);
 
-  const handleDispute = () => {
-    if (disputeReason.trim()) {
-      setDisputeReason('');
-      setShowDisputeModal(false);
-    }
-  };
+  const remainingTime = getTimeRemaining(activeDeadline);
+  const votingClosed = isDeadlinePast(assertion.voteResolutionRound?.votingDeadline);
+
+  // Current non-final answer is inferred from state (docs/resolution.md) —
+  // `outcome` is only meaningful once Resolved.
+  const llmOutcome = assertion.llmResolutionRound?.outcome;
+  const isResolved = assertion.state === 'Resolved';
+  const consensus =
+    assertion.state === 'Asserted'
+      ? 'True (Optimistic)'
+      : assertion.state === 'PendingLLM'
+        ? 'Pending'
+        : assertion.state === 'AssertedLLM'
+          ? (llmOutcome ?? 'Pending')
+          : assertion.state === 'PendingVote' || assertion.state === 'Voting'
+            ? `${llmOutcome ?? 'Unknown'} (Challenged)`
+            : getOutcomeLabel(assertion.outcome);
+
+  const consensusColor = !isResolved
+    ? 'text-lime-400'
+    : assertion.outcome === 'True'
+      ? 'text-lime-400'
+      : assertion.outcome === 'False'
+        ? 'text-red-400'
+        : 'text-zinc-400';
 
   return (
-    <Container className="border-muted-foreground/50 border-x border-dashed py-16">
-      <header className="border-foreground/40 flex h-16 items-center justify-between border-b border-dashed px-4">
+    <Container className="border-muted-foreground/50 flex h-screen flex-col overflow-hidden border-x border-dashed pt-16">
+      <header className="border-foreground/40 flex h-16 shrink-0 items-center justify-between border-b px-4">
         <div className="flex items-center gap-8">
           <div className="flex flex-col">
-            <span className="text-muted-foreground text-[10px] uppercase">Current Consensus</span>
+            <span className="text-muted-foreground text-xs uppercase">
+              {isResolved ? 'Final Outcome' : 'Current Consensus'}
+            </span>
 
-            <span className="text-sm font-semibold text-lime-400 uppercase">
-              {assertion.state === 'Asserted'
-                ? `${assertion.outcome} (OPTIMISTIC)`
-                : assertion.outcome}
+            <span className={cn('text-sm font-semibold uppercase', consensusColor)}>
+              {consensus}
             </span>
           </div>
 
           <div className="flex flex-col">
-            <span className="text-muted-foreground text-[10px] uppercase">Resolution Stage</span>
+            <span className="text-muted-foreground text-xs uppercase">Resolution Stage</span>
 
-            <span className="text-sm font-semibold text-orange-300 uppercase">
-              {assertion.state}
+            <span className={cn('text-sm font-semibold uppercase', STAGE_COLORS[assertion.state])}>
+              {getStageLabel(assertion.state)}
             </span>
           </div>
 
           <div className="flex flex-col">
-            <span className="text-muted-foreground text-[10px] uppercase">Bond Pool</span>
+            <span className="text-muted-foreground text-xs uppercase">Bond Pool</span>
 
             <span className="text-sm font-semibold uppercase">
               {assertion.bondAmountPUSD * (1 + assertion.disputeCount)} PUSD
@@ -78,49 +128,58 @@ export default function StatementPage() {
         </div>
 
         <div className="flex flex-col items-end">
-          <span className="text-muted-foreground text-[10px] uppercase">
-            {assertion.finalizedAt ? 'Finalized' : 'Challenge Window'}
+          <span className="text-muted-foreground text-xs uppercase">
+            {DEADLINE_LABELS[assertion.state]}
           </span>
 
           <span className="text-sm font-semibold text-lime-400 uppercase">
             {assertion.finalizedAt
               ? new Date(assertion.finalizedAt).toLocaleDateString()
-              : remainingTime}
+              : assertion.state === 'PendingLLM' || assertion.state === 'PendingVote'
+                ? 'PENDING'
+                : remainingTime}
           </span>
         </div>
       </header>
 
-      <div className="flex flex-col justify-between gap-12 px-4 py-8 lg:flex-row">
-        <div className="flex max-w-4xl flex-1 flex-col gap-10">
-          <AssertionSection
-            statement={assertion.statement}
-            outcome={assertion.outcome}
-            state={assertion.state}
-            disputeCount={assertion.disputeCount}
-            bondAmount={assertion.bondAmountPUSD}
-            createdAt={assertion.createdAt}
-            finalizedAt={assertion.finalizedAt}
-            llmOutcome={assertion.llmResolutionRound?.outcome}
-            voteWeight={assertion.voteResolutionRound?.totalValidWeight}
-            onDisputeClick={() => setShowDisputeModal(true)}
-            onEvidenceClick={() => setShowEvidenceModal(true)}
+      <div className="flex min-h-0 w-full flex-1 flex-col items-center gap-6 overflow-y-auto px-6 pt-8 pb-6">
+        <AssertionSection
+          assertion={assertion}
+          onEvidenceClick={() => setShowEvidenceModal(true)}
+        />
+
+        {/* Statement stays pinned at the top; the rest centers in the remaining space. */}
+        <div className="flex w-full flex-1 flex-col items-center justify-center gap-6">
+          <DisputeAction
+            assertion={assertion}
+            userVote={userVote}
+            onSubmitLlmResolution={(outcome) => submitLlmResolution(idStr, outcome)}
+            onOpenVote={() => openVote(idStr)}
+            onFinalize={() => finalizeAssertion(idStr)}
           />
 
-          <EconomicsSection assertion={assertion} />
+          {(assertion.llmResolutionRound || assertion.voteResolutionRound) && (
+            <div
+              className={cn(
+                'grid w-full gap-6',
+                assertion.llmResolutionRound && assertion.voteResolutionRound && 'lg:grid-cols-2'
+              )}
+            >
+              {assertion.llmResolutionRound && <LLMSection round={assertion.llmResolutionRound} />}
 
-          <EvidenceSection
-            auxiliaryUrl={assertion.auxiliaryUrl ?? ''}
-            auxiliaryHash={assertion.auxiliaryHash}
-            onViewEvidence={() => setShowEvidenceModal(true)}
-          />
-
-          {assertion.llmResolutionRound && <LLMSection round={assertion.llmResolutionRound} />}
-
-          {assertion.voteResolutionRound && (
-            <VotingSection round={assertion.voteResolutionRound} state={assertion.state} />
+              {assertion.voteResolutionRound && (
+                <VotingPanel
+                  round={assertion.voteResolutionRound}
+                  votingClosed={votingClosed}
+                  userVote={userVote}
+                />
+              )}
+            </div>
           )}
         </div>
+      </div>
 
+      <div className="shrink-0 px-4 pb-4">
         <Timeline statement={assertion} />
       </div>
 
@@ -185,272 +244,52 @@ export default function StatementPage() {
           </m.div>
         )}
       </AnimatePresence>
-
-      {/* Dispute Modal */}
-      <AnimatePresence>
-        {showDisputeModal && (
-          <m.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setShowDisputeModal(false)}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
-          >
-            <m.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              onClick={(e) => e.stopPropagation()}
-              className="bg-background border-muted-foreground/30 relative mx-4 max-h-96 w-full max-w-2xl overflow-y-auto rounded-md border p-6"
-            >
-              <div className="via-primary/70 pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent to-transparent" />
-              <button
-                onClick={() => setShowDisputeModal(false)}
-                className="text-muted-foreground hover:text-foreground absolute top-4 right-4 transition-colors"
-              >
-                <XIcon size={20} />
-              </button>
-
-              <h2 className="mb-4 text-lg font-semibold uppercase">Dispute Statement</h2>
-
-              <div className="space-y-4">
-                <div>
-                  <p className="text-muted-foreground mb-2 text-xs tracking-wide uppercase">
-                    Assertion
-                  </p>
-                  <p className="text-sm leading-relaxed">{assertion.statement}</p>
-                </div>
-
-                <div>
-                  <p className="text-muted-foreground mb-2 text-xs tracking-wide uppercase">
-                    Your Reason for Dispute
-                  </p>
-                  <Textarea
-                    placeholder="Explain why you believe this assertion is incorrect..."
-                    value={disputeReason}
-                    onChange={(e) => setDisputeReason(e.target.value)}
-                    className="min-h-24 resize-none text-sm"
-                  />
-                  <p className="text-muted-foreground/60 mt-2 text-xs">
-                    {disputeReason.length} characters
-                  </p>
-                </div>
-
-                <div className="flex gap-3 pt-2">
-                  <Button
-                    onClick={() => setShowDisputeModal(false)}
-                    variant="outline"
-                    className="flex-1 rounded-none uppercase"
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    onClick={handleDispute}
-                    disabled={!disputeReason.trim()}
-                    className="flex-1 rounded-none uppercase"
-                  >
-                    Stake Bond & Dispute
-                  </Button>
-                </div>
-              </div>
-            </m.div>
-          </m.div>
-        )}
-      </AnimatePresence>
     </Container>
   );
 }
 
 function AssertionSection({
-  statement,
-  outcome,
-  state,
-  disputeCount,
-  bondAmount,
-  createdAt,
-  finalizedAt,
-  llmOutcome,
-  voteWeight,
-  onDisputeClick,
+  assertion,
   onEvidenceClick,
 }: {
-  statement: string;
-  outcome?: ResolutionOutcome | null;
-  state: string;
-  disputeCount: number;
-  bondAmount: number;
-  createdAt: string;
-  finalizedAt: string | null;
-  llmOutcome?: ResolutionOutcome | null;
-  voteWeight?: bigint | null;
-  onDisputeClick: () => void;
+  assertion: AssertionAccount;
   onEvidenceClick: () => void;
 }) {
-  const stageMap: Record<string, string> = {
-    Asserted: 'OPTIMISTIC',
-    PendingLLM: 'AWAITING LLM',
-    AssertedLLM: 'LLM RESOLVED',
-    PendingVote: 'PREPARING VOTE',
-    Voting: 'VOTING LIVE',
-    Resolved: 'FINALIZED',
-  };
-
-  const isFinal = state === 'Resolved';
-
-  const consensus =
-    state === 'Asserted' ? `${outcome ?? 'Unknown'} (OPTIMISTIC)` : (outcome ?? 'Pending');
-
-  const finalStatus = isFinal ? 'FINALIZED' : 'PENDING';
-
-  const bondPool = bondAmount * (1 + disputeCount);
-
-  let protocolMessage = '';
-
-  if (state === 'Asserted') {
-    protocolMessage = 'assertion is currently within optimistic liveness window.';
-  }
-
-  if (state === 'PendingLLM') {
-    protocolMessage = 'assertion disputed. awaiting llm resolution.';
-  }
-
-  if (state === 'AssertedLLM') {
-    protocolMessage = `llm proposed ${llmOutcome?.toUpperCase() ?? 'Unknown'}. challenge window active.`;
-  }
-
-  if (state === 'PendingVote') {
-    protocolMessage = 'llm resolution challenged. vote initialization pending.';
-  }
-
-  if (state === 'Voting') {
-    protocolMessage = `${Number(voteWeight || 0).toLocaleString()} opal voting weight currently active.`;
-  }
-
-  if (state === 'Resolved') {
-    protocolMessage = `finalized via ${
-      disputeCount === 2 ? 'voting' : disputeCount === 1 ? 'llm' : 'optimistic'
-    } resolution.`;
-  }
-
-  const canDispute = state !== 'Resolved';
+  const { disputeCount } = assertion;
 
   return (
-    <section className="flex flex-col gap-8">
-      <div className="flex flex-col gap-6">
-        <h1 className="max-w-4xl text-4xl font-bold tracking-tight uppercase md:text-5xl">
-          {statement}
+    <section className="flex w-full flex-col items-center gap-5 text-center">
+      <div className="flex flex-col items-center gap-4">
+        <h1 className="max-w-4xl text-3xl font-bold tracking-tight uppercase md:text-4xl">
+          {assertion.statement}
         </h1>
 
-        <div className="flex items-center gap-4">
-          <Button
-            onClick={onDisputeClick}
-            disabled={!canDispute}
-            variant={canDispute ? 'destructive' : 'outline'}
-            className="rounded-none uppercase"
-          >
-            <LinkBreakIcon />
-            {canDispute ? 'Dispute Statement' : 'Dispute Closed'}
-          </Button>
-
-          <Button onClick={onEvidenceClick} variant="outline" className="rounded-none uppercase">
-            View Evidence
-          </Button>
-        </div>
+        <Button
+          onClick={onEvidenceClick}
+          variant="outline"
+          size="sm"
+          className="rounded-none uppercase"
+        >
+          View Evidence
+        </Button>
       </div>
 
-      <div className="grid grid-cols-2 gap-x-12 gap-y-6 md:grid-cols-3">
-        <Meta label="Current Consensus" value={consensus} />
+      <div className="grid grid-cols-3 gap-x-12 gap-y-4">
+        <Meta label="Assertion Bond" value={`${assertion.bondAmountPUSD} PUSD`} center />
 
-        <Meta label="Final Status" value={finalStatus} />
+        <Meta label="Disputes" value={`${disputeCount}`} center />
 
-        <Meta label="Resolution Stage" value={stageMap[state] ?? 'Unknown'} />
-
-        <Meta label="Disputes" value={`${disputeCount} ACTIVE`} />
-
-        <Meta label="Bond Pool" value={`${bondPool} PUSD`} />
-
-        <Meta label="Created" value={new Date(createdAt).toLocaleDateString()} />
-
-        {finalizedAt && (
-          <Meta label="Finalized" value={new Date(finalizedAt).toLocaleDateString()} />
-        )}
-
-        {llmOutcome && <Meta label="LLM Resolution" value={llmOutcome} />}
-
-        {voteWeight !== undefined && voteWeight !== null && (
-          <Meta label="Voting Weight" value={`${Number(voteWeight).toLocaleString()} OPAL`} />
-        )}
-      </div>
-
-      <div className="border-muted-foreground/20 flex flex-col gap-2 border-t border-dashed pt-8">
-        <span className="text-muted-foreground text-xs uppercase">
-          Current Protocol Interpretation
-        </span>
-
-        <p className="text-sm leading-relaxed font-medium uppercase">{protocolMessage}</p>
+        <Meta label="Created" value={new Date(assertion.createdAt).toLocaleDateString()} center />
       </div>
     </section>
   );
 }
 
-function EconomicsSection({ assertion }: { assertion: any }) {
-  const totalBondPool = assertion.bondAmountPUSD * (1 + assertion.disputeCount);
-
-  return (
-    <Section title="Economics">
-      <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
-        <Meta label="Assertion Bond" value={`${assertion.bondAmountPUSD} PUSD`} />
-
-        <Meta label="Dispute Count" value={`${assertion.disputeCount}`} />
-
-        <Meta label="Total Bond Pool" value={`${totalBondPool} PUSD`} />
-
-        <Meta label="Settlement" value={assertion.finalizedAt ? 'FINALIZED' : 'PENDING'} />
-      </div>
-    </Section>
-  );
-}
-
-function EvidenceSection({
-  auxiliaryUrl,
-  auxiliaryHash,
-  onViewEvidence,
-}: {
-  auxiliaryUrl: string;
-  auxiliaryHash: string;
-  onViewEvidence: () => void;
-}) {
-  return (
-    <Section title="Auxiliary Evidence">
-      <div className="flex flex-col gap-4">
-        <Meta label="Evidence Hash" value={auxiliaryHash} />
-
-        {auxiliaryUrl ? <Meta label="Evidence URL" value={auxiliaryUrl} /> : null}
-
-        <div className="flex gap-3">
-          <Button
-            onClick={onViewEvidence}
-            variant="outline"
-            className="rounded-none text-sm uppercase"
-          >
-            View Evidence
-          </Button>
-        </div>
-
-        <p className="text-muted-foreground text-sm leading-relaxed uppercase">
-          auxiliary evidence supplied by the asserter to guide llm and voting interpretation.
-        </p>
-      </div>
-    </Section>
-  );
-}
-
-function LLMSection({ round }: { round: any }) {
+function LLMSection({ round }: { round: NonNullable<AssertionAccount['llmResolutionRound']> }) {
   return (
     <Section title="LLM Resolution">
       <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
-        <Meta label="Outcome" value={round.outcome} />
+        <Meta label="Outcome" value={round.outcome ?? 'PENDING'} />
 
         <Meta
           label="Resolved At"
@@ -472,85 +311,9 @@ function LLMSection({ round }: { round: any }) {
   );
 }
 
-function VotingSection({ round, state }: { round: any; state: string }) {
-  const isVotingActive = state === 'Voting';
-  const outcomes: ResolutionOutcome[] = ['True', 'False', 'TooEarly', 'Unresolvable'];
-
-  return (
-    <Section title="Voting">
-      <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
-        <Meta
-          label="Voting Weight"
-          value={`${Number(round.totalValidWeight).toLocaleString()} OPAL`}
-        />
-
-        <Meta label="Leading Outcome" value={round.finalOutcome || 'Pending'} />
-
-        <Meta
-          label="Voting Opens"
-          value={
-            round.votingStartsAt ? new Date(round.votingStartsAt).toLocaleDateString() : 'PENDING'
-          }
-        />
-
-        <Meta
-          label="Voting Deadline"
-          value={
-            round.votingDeadline ? new Date(round.votingDeadline).toLocaleDateString() : 'PENDING'
-          }
-        />
-      </div>
-
-      {isVotingActive && (
-        <div className="flex flex-col gap-4 py-4">
-          <p className="text-muted-foreground text-xs tracking-wide uppercase">Cast Your Vote</p>
-          <p className="text-muted-foreground/80 text-xs leading-relaxed">
-            Vote casting requires MagicBlock ephemeral rollup integration and is not available on
-            devnet yet.
-          </p>
-
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-            {outcomes.map((outcome) => (
-              <Button
-                key={outcome}
-                disabled
-                title="MagicBlock voting not wired yet"
-                variant="outline"
-                className="rounded-none text-sm uppercase opacity-50"
-              >
-                {outcome === 'TooEarly'
-                  ? 'Too Early'
-                  : outcome === 'Unresolvable'
-                    ? 'Unresolvable'
-                    : outcome}
-              </Button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      <div className="flex flex-col gap-3 pt-2">
-        <p className="text-muted-foreground text-xs tracking-wide uppercase">Aggregate Votes</p>
-        {Object.entries(round.aggregateVotes).map(([key, value]) => (
-          <div
-            key={key}
-            className="flex items-center justify-between border-b border-dashed pb-2 text-sm uppercase"
-          >
-            <span>
-              {key === 'TooEarly' ? 'Too Early' : key === 'Unresolvable' ? 'Unresolvable' : key}
-            </span>
-
-            <span className="font-mono font-semibold">{Number(value).toLocaleString()}</span>
-          </div>
-        ))}
-      </div>
-    </Section>
-  );
-}
-
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="border-muted-foreground/20 flex flex-col gap-6 border-t border-dashed pt-8">
+    <section className="border-muted-foreground/30 flex h-full flex-col gap-4 border p-5">
       <h2 className="text-muted-foreground text-xs font-semibold tracking-[0.2em] uppercase">
         {title}
       </h2>
@@ -560,9 +323,17 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
-function Meta({ label, value }: { label: string; value: string }) {
+function Meta({
+  label,
+  value,
+  center = false,
+}: {
+  label: string;
+  value: string;
+  center?: boolean;
+}) {
   return (
-    <div className="flex flex-col gap-1">
+    <div className={cn('flex flex-col gap-1', center && 'items-center')}>
       <span className="text-muted-foreground text-xs uppercase">{label}</span>
 
       <span className="text-sm font-semibold break-all uppercase">{value}</span>

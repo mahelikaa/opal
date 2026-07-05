@@ -7,7 +7,7 @@ import ResolutionLayers from '@/components/landing/resolution-layers';
 
 export default function Home() {
   return (
-    <Container className="border-muted-foreground/50 border-x border-dashed">
+    <Container className="border-muted-foreground/50 border-x border-dashed pt-16">
       <Hero />
       <Process />
       <ResolutionLayers />

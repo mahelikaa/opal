@@ -1,6 +1,8 @@
 import { cn } from '@/lib/utils';
 import type { AssertionAccount } from '@/types';
 
+// Horizontal lifecycle timeline card. The detail page pins it in-flow at the bottom of
+// its fixed-height layout so it never overlaps the content above.
 export default function Timeline({ statement }: { statement: AssertionAccount | undefined }) {
   if (!statement) {
     return null;
@@ -83,68 +85,63 @@ export default function Timeline({ statement }: { statement: AssertionAccount | 
   ];
 
   return (
-    <div className="relative flex h-fit w-fit flex-col">
-      {events.map((event, index) => {
-        const isLast = index === events.length - 1;
+    <div className="w-full">
+      <div className="border-muted-foreground/50 bg-background/85 border px-6 py-4 shadow-lg backdrop-blur-md">
+        <span className="text-muted-foreground/75 text-xs tracking-[0.25em] uppercase">
+          Lifecycle
+        </span>
 
-        return (
-          <div key={`${event.title}-${index}`} className="flex flex-1 flex-col">
-            <div className="flex items-start gap-2">
-              <div className="flex min-w-35 flex-col items-end">
-                <span className="text-muted-foreground text-xs whitespace-nowrap uppercase">
-                  {event.date
-                    ? new Date(event.date).toLocaleDateString('en-US', {
-                        day: '2-digit',
-                        month: 'short',
-                        year: 'numeric',
-                      })
-                    : 'Pending'}
-                </span>
+        <div className="no-scrollbar mt-3 flex overflow-x-auto">
+          {events.map((event, index) => {
+            const isLast = index === events.length - 1;
 
-                <span
-                  className={cn(
-                    'text-xs whitespace-nowrap uppercase',
-                    event.active ? 'text-foreground' : 'text-muted-foreground'
+            return (
+              <div
+                key={`${event.title}-${index}`}
+                className={cn('flex min-w-36 flex-col gap-2', !isLast && 'flex-1')}
+              >
+                <div className="flex items-center">
+                  <span
+                    className={cn(
+                      'ring-secondary z-10 size-2 shrink-0 rounded-full ring-2',
+                      event.color
+                    )}
+                  />
+
+                  {!isLast && (
+                    <span className="border-muted-foreground/50 mx-2 h-px flex-1 border-t border-dashed" />
                   )}
-                >
-                  {event.title}
-                </span>
+                </div>
 
-                <span className="text-muted-foreground max-w-35 text-right text-[10px] leading-relaxed uppercase">
-                  {event.description}
-                </span>
-              </div>
+                <div className="flex flex-col gap-0.5 pr-6">
+                  <span className="text-muted-foreground text-xs whitespace-nowrap uppercase">
+                    {event.date
+                      ? new Date(event.date).toLocaleDateString('en-US', {
+                          day: '2-digit',
+                          month: 'short',
+                          year: 'numeric',
+                        })
+                      : 'Pending'}
+                  </span>
 
-              <div className="flex h-full flex-col items-center">
-                <span
-                  className={cn(
-                    'ring-secondary z-10 size-2 shrink-0 rounded-full ring-2',
-                    event.color
-                  )}
-                />
-
-                {!isLast && (
-                  <svg
-                    width="1"
-                    className="mr-0.75 ml-auto h-24 flex-1"
-                    xmlns="http://www.w3.org/2000/svg"
-                    preserveAspectRatio="none"
+                  <span
+                    className={cn(
+                      'text-xs font-semibold whitespace-nowrap uppercase',
+                      event.active ? 'text-foreground' : 'text-muted-foreground'
+                    )}
                   >
-                    <line
-                      x1="0.5"
-                      x2="0.5"
-                      y1="0"
-                      y2="100%"
-                      strokeDasharray="4 4"
-                      className="stroke-muted-foreground/50"
-                    />
-                  </svg>
-                )}
+                    {event.title}
+                  </span>
+
+                  <span className="text-muted-foreground text-xs leading-relaxed uppercase">
+                    {event.description}
+                  </span>
+                </div>
               </div>
-            </div>
-          </div>
-        );
-      })}
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 }

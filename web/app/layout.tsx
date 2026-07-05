@@ -5,7 +5,7 @@ import Container from '@/components/common/container';
 import Navbar from '@/components/common/navbar';
 import { Providers } from '@/providers/providers';
 
-import { Disket } from './font';
+import { Hind, Khand } from './font';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -20,7 +20,11 @@ export default function RootLayout({
   children: ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${Disket.className} h-full antialiased`} suppressHydrationWarning>
+    <html
+      lang="en"
+      className={`${Hind.variable} ${Khand.variable} ${Hind.className} h-full antialiased`}
+      suppressHydrationWarning
+    >
       <body className="relative overflow-x-clip">
         <Providers>
           <Container className="border-muted-foreground/50 border-x border-dashed">

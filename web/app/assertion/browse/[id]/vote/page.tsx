@@ -1,0 +1,339 @@
+'use client';
+
+import Link from 'next/link';
+import { notFound, useParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
+
+import {
+  ArrowLeftIcon,
+  CheckCircleIcon,
+  ClockIcon,
+  QuestionIcon,
+  SealCheckIcon,
+  XCircleIcon,
+} from '@phosphor-icons/react';
+import type { Icon } from '@phosphor-icons/react';
+import { motion as m } from 'motion/react';
+
+import Container from '@/components/common/container';
+import { Button } from '@/components/ui/button';
+import { getOutcomeLabel } from '@/lib/assertion-labels';
+import { MOCK_VOTE_WEIGHT, castVote, useAssertions, useUserVote } from '@/lib/assertion-store';
+import { getTimeRemaining, isDeadlinePast } from '@/lib/helpers';
+import { cn } from '@/lib/utils';
+import { useWallet } from '@/providers/wallet-context';
+import type { ResolutionOutcome, VoteResolutionRound } from '@/types';
+
+const OUTCOME_OPTIONS: {
+  outcome: ResolutionOutcome;
+  icon: Icon;
+  description: string;
+}[] = [
+  { outcome: 'True', icon: CheckCircleIcon, description: 'The statement is accurate as written.' },
+  { outcome: 'False', icon: XCircleIcon, description: 'The statement is inaccurate.' },
+  { outcome: 'TooEarly', icon: ClockIcon, description: 'It cannot be resolved yet.' },
+  {
+    outcome: 'Unresolvable',
+    icon: QuestionIcon,
+    description: 'It can never be verifiably resolved.',
+  },
+];
+
+export default function VoteScreen() {
+  const { id } = useParams();
+  const idStr = Array.isArray(id) ? id[0] : id;
+  const assertions = useAssertions();
+  const assertion = assertions.find((s) => s.id === idStr);
+
+  if (!assertion || !idStr) {
+    notFound();
+  }
+
+  const { ready, authenticated, currentAddress, login } = useWallet();
+  const walletConnected = Boolean(ready && authenticated && currentAddress);
+
+  const userVote = useUserVote(idStr);
+  const [selected, setSelected] = useState<ResolutionOutcome | null>(null);
+
+  // 1s ticker so the countdown and the closing deadline re-evaluate live.
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    const interval = setInterval(() => setTick((tick) => tick + 1), 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const round = assertion.voteResolutionRound;
+  const votingClosed = isDeadlinePast(round?.votingDeadline);
+  const votingLive =
+    assertion.state === 'Voting' && Boolean(round?.votingDeadline) && !votingClosed;
+
+  const backHref = `/assertion/browse/${idStr}`;
+
+  if (userVote && round) {
+    return (
+      <VoteRecorded
+        statement={assertion.statement}
+        userVote={userVote}
+        round={round}
+        votingClosed={votingClosed}
+        backHref={backHref}
+      />
+    );
+  }
+
+  if (!votingLive || !round) {
+    return (
+      <Container className="border-muted-foreground/50 flex min-h-screen flex-col items-center justify-center gap-4 border-x border-dashed px-4">
+        <p className="text-base font-medium tracking-wide uppercase">
+          {votingClosed ? 'Voting has closed.' : 'Voting is not open for this assertion.'}
+        </p>
+
+        <p className="text-muted-foreground text-sm">
+          {votingClosed
+            ? 'The voting window has ended — the round can now be finalized.'
+            : 'Votes can only be cast while the assertion is in its voting window.'}
+        </p>
+
+        <Button
+          variant="outline"
+          className="uppercase"
+          nativeButton={false}
+          render={<Link href={backHref} />}
+        >
+          Back to Assertion
+        </Button>
+      </Container>
+    );
+  }
+
+  const handleConfirm = () => {
+    if (!selected) return;
+    if (!walletConnected) {
+      login();
+      return;
+    }
+    castVote(idStr, selected, MOCK_VOTE_WEIGHT);
+  };
+
+  const confirmLabel = !selected
+    ? 'Select an Outcome'
+    : !walletConnected
+      ? `Sign in to Vote ${getOutcomeLabel(selected)}`
+      : `Confirm Vote — ${getOutcomeLabel(selected)} · ${MOCK_VOTE_WEIGHT.toLocaleString()} OPAL`;
+
+  return (
+    <Container className="border-muted-foreground/50 flex min-h-screen flex-col border-x border-dashed px-4 pt-24 pb-8">
+      <m.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35, ease: 'easeOut' }}
+        className="mx-auto flex w-full max-w-4xl flex-1 flex-col"
+      >
+        <div className="flex items-center justify-between">
+          <Link
+            href={backHref}
+            className="text-muted-foreground hover:text-foreground flex items-center gap-2 text-xs tracking-widest uppercase transition-colors"
+          >
+            <ArrowLeftIcon size={14} />
+            Back to Assertion
+          </Link>
+
+          <div className="flex flex-col items-end">
+            <span className="text-muted-foreground text-xs tracking-[0.2em] uppercase">
+              Voting Closes In
+            </span>
+
+            <span className="text-primary font-mono text-sm font-semibold uppercase">
+              {getTimeRemaining(round.votingDeadline ?? undefined)}
+            </span>
+          </div>
+        </div>
+
+        <div className="flex flex-1 flex-col justify-center gap-10 py-12">
+          <div className="flex flex-col gap-4">
+            <span className="text-primary text-xs font-semibold tracking-[0.25em] uppercase">
+              Cast Your Vote
+            </span>
+
+            <h1 className="max-w-3xl text-2xl font-bold tracking-tight uppercase md:text-4xl">
+              {assertion.statement}
+            </h1>
+
+            <div className="text-muted-foreground flex flex-wrap gap-x-8 gap-y-2 text-xs uppercase">
+              <span>
+                LLM Proposed{' '}
+                <span className="text-foreground font-semibold">
+                  {getOutcomeLabel(assertion.llmResolutionRound?.outcome ?? null)}
+                </span>
+              </span>
+
+              <span>
+                Your Weight{' '}
+                <span className="text-foreground font-mono font-semibold">
+                  {MOCK_VOTE_WEIGHT.toLocaleString()} OPAL
+                </span>
+              </span>
+
+              <span>
+                Total Locked{' '}
+                <span className="text-foreground font-mono font-semibold">
+                  {Number(round.totalValidWeight).toLocaleString()} OPAL
+                </span>
+              </span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            {OUTCOME_OPTIONS.map(({ outcome, icon: OutcomeIcon, description }) => {
+              const isSelected = selected === outcome;
+
+              return (
+                <button
+                  key={outcome}
+                  onClick={() => setSelected(outcome)}
+                  aria-pressed={isSelected}
+                  className={cn(
+                    'group flex min-h-40 flex-col items-start justify-between gap-4 border p-6 text-left transition-colors md:p-8',
+                    isSelected
+                      ? 'border-primary bg-primary/10'
+                      : 'border-muted-foreground/40 hover:border-primary/60 hover:bg-primary/5'
+                  )}
+                >
+                  <OutcomeIcon
+                    size={32}
+                    weight={isSelected ? 'fill' : 'regular'}
+                    className={cn(
+                      'transition-colors',
+                      isSelected ? 'text-primary' : 'text-muted-foreground group-hover:text-primary'
+                    )}
+                  />
+
+                  <div className="flex flex-col gap-1">
+                    <span
+                      className={cn(
+                        'text-xl font-bold tracking-wide uppercase md:text-2xl',
+                        isSelected && 'text-primary'
+                      )}
+                    >
+                      {getOutcomeLabel(outcome)}
+                    </span>
+
+                    <span className="text-muted-foreground text-xs leading-relaxed">
+                      {description}
+                    </span>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
+          <p className="text-muted-foreground/60 text-xs leading-relaxed">
+            Mock vote weight: {MOCK_VOTE_WEIGHT.toLocaleString()} OPAL. Real MagicBlock-weighted
+            TWAV voting is not wired yet — this only updates local state.
+          </p>
+        </div>
+
+        <div className="border-muted-foreground/50 border-t pt-4">
+          <m.button
+            whileHover={selected ? { scale: 1.005 } : {}}
+            whileTap={selected ? { scale: 0.995 } : {}}
+            disabled={!selected}
+            onClick={handleConfirm}
+            className={cn(
+              'w-full py-4 text-xs tracking-widest uppercase transition-colors',
+              selected
+                ? 'bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer font-semibold'
+                : 'bg-muted/30 text-muted-foreground/25 border-muted-foreground/10 cursor-not-allowed border'
+            )}
+          >
+            {confirmLabel}
+          </m.button>
+        </div>
+      </m.div>
+    </Container>
+  );
+}
+
+function VoteRecorded({
+  statement,
+  userVote,
+  round,
+  votingClosed,
+  backHref,
+}: {
+  statement: string;
+  userVote: ResolutionOutcome;
+  round: VoteResolutionRound;
+  votingClosed: boolean;
+  backHref: string;
+}) {
+  const totalWeight = Number(round.totalValidWeight);
+
+  return (
+    <Container className="border-muted-foreground/50 flex min-h-screen flex-col items-center justify-center border-x border-dashed px-4 py-24">
+      <m.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35, ease: 'easeOut' }}
+        className="flex w-full max-w-2xl flex-col items-center gap-10 text-center"
+      >
+        <div className="flex flex-col items-center gap-4">
+          <SealCheckIcon size={48} weight="fill" className="text-primary" />
+
+          <span className="text-muted-foreground text-xs tracking-[0.25em] uppercase">
+            Vote Recorded
+          </span>
+
+          <h1 className="text-3xl font-bold tracking-wide uppercase md:text-4xl">
+            You Voted <span className="text-primary">{getOutcomeLabel(userVote)}</span>
+          </h1>
+
+          <p className="text-muted-foreground max-w-lg text-sm leading-relaxed">{statement}</p>
+
+          <p className="text-muted-foreground text-xs uppercase">
+            {votingClosed
+              ? 'Voting has closed — the round can now be finalized.'
+              : `Voting closes in ${getTimeRemaining(round.votingDeadline ?? undefined)}.`}
+          </p>
+        </div>
+
+        <div className="flex w-full flex-col gap-3 text-left">
+          {(['True', 'False', 'TooEarly', 'Unresolvable'] as ResolutionOutcome[]).map((outcome) => {
+            const votes = Number(round.aggregateVotes[outcome]);
+            const share = totalWeight > 0 ? Math.round((votes / totalWeight) * 100) : 0;
+            const isUserVote = userVote === outcome;
+
+            return (
+              <div key={outcome} className="flex flex-col gap-1.5 border-b pb-2">
+                <div className="flex items-center justify-between text-sm uppercase">
+                  <span className={cn(isUserVote && 'text-primary font-semibold')}>
+                    {getOutcomeLabel(outcome)}
+                  </span>
+
+                  <span className="font-mono font-semibold">
+                    {votes.toLocaleString()} · {share}%
+                  </span>
+                </div>
+
+                <div className="bg-muted/40 h-1 w-full">
+                  <div className="bg-primary h-full" style={{ width: `${share}%` }} />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <Button
+          size="lg"
+          variant="outline"
+          className="uppercase"
+          nativeButton={false}
+          render={<Link href={backHref} />}
+        >
+          <ArrowLeftIcon />
+          Back to Assertion
+        </Button>
+      </m.div>
+    </Container>
+  );
+}

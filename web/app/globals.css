@@ -37,9 +37,10 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.8711 0.0055 286.286);
   --sidebar-ring: oklch(0.8882 0.1981 125.5383);
-  --font-sans: Alexandria, ui-sans-serif, sans-serif, system-ui;
+  --font-sans: var(--font-hind), ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-khand), ui-sans-serif, system-ui, sans-serif;
   --font-serif: Noto Serif, ui-serif, serif;
-  --font-mono: JetBrains Mono, ui-monospace, monospace;
+  --font-mono: var(--font-hind), ui-sans-serif, system-ui, sans-serif;
   --radius: 0.25rem;
   --shadow-x: 0;
   --shadow-y: 1px;
@@ -89,9 +90,10 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.8711 0.0055 286.286);
   --sidebar-ring: oklch(0.8882 0.1981 125.5383);
-  --font-sans: Alexandria, ui-sans-serif, sans-serif, system-ui;
+  --font-sans: var(--font-hind), ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-khand), ui-sans-serif, system-ui, sans-serif;
   --font-serif: Noto Serif, ui-serif, serif;
-  --font-mono: JetBrains Mono, ui-monospace, monospace;
+  --font-mono: var(--font-hind), ui-sans-serif, system-ui, sans-serif;
   --radius: 0.25rem;
   --shadow-x: 0;
   --shadow-y: 1px;
@@ -144,9 +146,10 @@
   --sidebar-accent-foreground: oklch(0.9851 0 0);
   --sidebar-border: oklch(0.3703 0.0119 285.8054);
   --sidebar-ring: oklch(0.8882 0.1981 125.5383);
-  --font-sans: Alexandria, ui-sans-serif, sans-serif, system-ui;
+  --font-sans: var(--font-hind), ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-khand), ui-sans-serif, system-ui, sans-serif;
   --font-serif: Noto Serif, ui-serif, serif;
-  --font-mono: JetBrains Mono, ui-monospace, monospace;
+  --font-mono: var(--font-hind), ui-sans-serif, system-ui, sans-serif;
   --radius: 0.25rem;
   --shadow-x: 0;
   --shadow-y: 1px;
@@ -231,9 +234,11 @@
   --color-sidebar-ring: var(--sidebar-ring);
 
   --font-sans: var(--font-sans);
+  --font-heading: var(--font-heading);
   --font-mono: var(--font-mono);
   --font-serif: var(--font-serif);
   --font-sans: var(--font-sans);
+  --font-heading: var(--font-heading);
   --font-mono: var(--font-mono);
   --font-serif: var(--font-serif);
 
@@ -279,5 +284,39 @@
   }
   button {
     cursor: pointer;
+  }
+}
+
+::selection {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
+@layer base {
+  /* Khand bold for headings, Hind regular for body (see app/font.ts). */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    line-height: 1.1;
+    text-wrap: balance;
+  }
+  html {
+    font-size: 112.5%;
+  }
+  body {
+    font-weight: 400;
+  }
+  p {
+    text-wrap: pretty;
+  }
+  kbd,
+  code,
+  samp {
+    font-family: var(--font-sans);
   }
 }

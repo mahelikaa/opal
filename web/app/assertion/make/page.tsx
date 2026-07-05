@@ -11,7 +11,8 @@ import SectionHeader from '@/components/assertion/section-header';
 import StatementSection from '@/components/assertion/statement-section';
 import SummarySection from '@/components/assertion/summary-section';
 import Container from '@/components/common/container';
-import { ASSERTIONS, ASSERTION_BOND_PUSD } from '@/data/assertion';
+import { ASSERTION_BOND_PUSD } from '@/data/assertion';
+import { addAssertion } from '@/lib/assertion-store';
 import { useWallet } from '@/providers/wallet-context';
 
 const MAX_CHARS = 280;
@@ -34,6 +35,26 @@ function hashPreview(str: string) {
   let h = 0;
   for (let i = 0; i < str.length; i++) h = (Math.imul(31, h) + str.charCodeAt(i)) | 0;
   return Math.abs(h).toString(16).padStart(8, '0') + '...';
+}
+
+// Toy 32-hex-char content hash — stands in for the real SHA-256 auxiliary hash.
+function mockHash(str: string) {
+  let h = 2166136261;
+  let out = '';
+  for (let round = 0; round < 4; round++) {
+    for (let i = 0; i < str.length; i++) h = Math.imul(h ^ str.charCodeAt(i), 16777619 + round);
+    out += (h >>> 0).toString(16).padStart(8, '0');
+  }
+  return out;
+}
+
+const BASE58 = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+
+// Mock assertion id — stands in for the caller-supplied `assertion_id` PDA seed.
+function generateMockId() {
+  let id = '';
+  for (let i = 0; i < 32; i++) id += BASE58.charAt(Math.floor(Math.random() * BASE58.length));
+  return id;
 }
 
 const SECTION_ORDER: Section[] = ['statement', 'params', 'evidence', 'summary'];
@@ -86,10 +107,33 @@ export default function MakeAssertion() {
   const canSubmit = statementValid && walletConnected;
   const buttonDisabled = Boolean(walletConnected) && !statementValid;
 
+  // Mock create — mirrors `create_assertion`, persisted in the client-side store
+  // until the on-chain transaction is wired.
   const handleSubmit = () => {
-    if (!canSubmit) return;
-    const mockId = ASSERTIONS[0]?.id ?? 'mock';
-    router.push(`/assertion/browse/${mockId}`);
+    if (!canSubmit || !currentAddress) return;
+
+    const id = generateMockId();
+    const submittedAt = Date.now();
+
+    addAssertion({
+      id,
+      asserter: currentAddress,
+      statement: statement.trim(),
+      auxiliaryHash: mockHash(statement + auxiliaryData),
+      bondAmountPUSD: bond,
+      state: 'Asserted',
+      livenessDeadline: new Date(submittedAt + window_.value * 1000).toISOString(),
+      outcome: 'True',
+      finalizedAt: null,
+      disputeCount: 0,
+      llmDispute: null,
+      voteDispute: null,
+      llmResolutionRound: null,
+      voteResolutionRound: null,
+      createdAt: new Date(submittedAt).toISOString(),
+    });
+
+    router.push(`/assertion/browse/${id}`);
   };
 
   const buttonLabel = !walletConnected
@@ -106,7 +150,7 @@ export default function MakeAssertion() {
         transition={{ duration: 0.35, ease: 'easeOut' }}
         className="relative z-10 mt-4 flex h-full flex-col overflow-hidden"
       >
-        <div className="bg-background border-muted-foreground/50 flex h-full flex-col overflow-hidden border border-dashed">
+        <div className="bg-background border-muted-foreground/50 flex h-full flex-col overflow-hidden border">
           <SectionHeader
             label="Statement"
             open={open === 'statement'}
@@ -182,7 +226,7 @@ export default function MakeAssertion() {
             formatExpiry={(seconds) => formatExpiry(createdAt, seconds)}
           />
 
-          <div className="border-muted-foreground/50 mt-auto border-t border-dashed p-5">
+          <div className="border-muted-foreground/50 mt-auto border-t p-5">
             <m.button
               whileHover={buttonDisabled ? {} : { scale: 1.005 }}
               whileTap={buttonDisabled ? {} : { scale: 0.995 }}
@@ -196,7 +240,7 @@ export default function MakeAssertion() {
               }}
               className={`w-full py-3 text-xs tracking-widest uppercase transition-colors ${
                 buttonDisabled
-                  ? 'bg-muted/30 text-muted-foreground/25 border-muted-foreground/10 cursor-not-allowed border border-dashed'
+                  ? 'bg-muted/30 text-muted-foreground/25 border-muted-foreground/10 cursor-not-allowed border'
                   : 'bg-primary hover:bg-primary/90 cursor-pointer text-black'
               }`}
             >

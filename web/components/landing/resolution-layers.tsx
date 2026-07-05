@@ -1,5 +1,6 @@
 'use client';
 import { motion as m } from 'motion/react';
+import CornerMarkers from '../common/corner-markers';
 
 export default function ResolutionLayers() {
   return (
@@ -40,7 +41,7 @@ export default function ResolutionLayers() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: '-20% 0px' }}
                 transition={{ duration: 0.4, delay: index * 0.05 }}
-                className="border-muted-foreground/40 bg-background/80 group flex flex-col gap-3 border border-dashed py-5 shadow-[0_10px_30px_-30px_rgba(0,0,0,0.6)] backdrop-blur"
+                className="border-muted-foreground/40 bg-background/80 group flex flex-col gap-3 border py-5 shadow-[0_10px_30px_-30px_rgba(0,0,0,0.6)] backdrop-blur"
               >
                 <div className="flex items-center justify-between gap-4 px-5">
                   <h3 className="text-lg font-semibold tracking-wider uppercase">{item.title}</h3>
@@ -51,7 +52,7 @@ export default function ResolutionLayers() {
                 <p className="text-muted-foreground px-5 text-sm leading-relaxed uppercase">
                   {item.summary}
                 </p>
-                <div className="border-border h-px w-full border-b border-dashed" />
+                <div className="border-border h-px w-full border-b" />
                 <span className="text-primary px-5 text-[10px] tracking-[0.4em] uppercase">
                   State
                 </span>
@@ -65,26 +66,7 @@ export default function ResolutionLayers() {
           </p>
         </div>
 
-        <m.span
-          animate={{ opacity: [0.4, 1, 0.4] }}
-          transition={{ duration: 1.6, repeat: Infinity }}
-          className="border-primary absolute bottom-6 left-6 z-20 size-4 border-b border-l"
-        />
-        <m.span
-          animate={{ opacity: [0.4, 1, 0.4] }}
-          transition={{ duration: 1.6, repeat: Infinity }}
-          className="border-primary absolute top-6 left-6 z-20 size-4 border-t border-l"
-        />
-        <m.span
-          animate={{ opacity: [0.4, 1, 0.4] }}
-          transition={{ duration: 1.6, repeat: Infinity }}
-          className="border-primary absolute right-6 bottom-6 z-20 size-4 border-r border-b"
-        />
-        <m.span
-          animate={{ opacity: [0.4, 1, 0.4] }}
-          transition={{ duration: 1.6, repeat: Infinity }}
-          className="border-primary absolute top-6 right-6 z-20 size-4 border-t border-r"
-        />
+       <CornerMarkers/>
       </section>
       <span className="border-muted-foreground/50 pointer-events-none absolute right-0 left-0 z-20 h-0.5 w-screen border-b border-dashed" />
     </>

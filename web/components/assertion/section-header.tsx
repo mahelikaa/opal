@@ -23,7 +23,7 @@ export default function SectionHeader({
       type="button"
       onClick={onClick}
       aria-expanded={open}
-      className="border-muted-foreground/50 hover:bg-muted/50 flex w-full items-center justify-between border-t border-dashed px-6 py-4 text-left transition-colors"
+      className="border-muted-foreground/50 hover:bg-muted/50 flex w-full items-center justify-between border-t px-6 py-4 text-left transition-colors"
     >
       <div className="flex flex-1 items-center gap-3">
         <span
