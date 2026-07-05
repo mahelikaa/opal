@@ -7,7 +7,6 @@ import { useEffect, useState } from 'react';
 import {
   ArrowLeftIcon,
   CheckCircleIcon,
-  ClockIcon,
   QuestionIcon,
   SealCheckIcon,
   XCircleIcon,
@@ -30,11 +29,10 @@ const OUTCOME_OPTIONS: {
 }[] = [
   { outcome: 'True', icon: CheckCircleIcon, description: 'The statement is accurate as written.' },
   { outcome: 'False', icon: XCircleIcon, description: 'The statement is inaccurate.' },
-  { outcome: 'TooEarly', icon: ClockIcon, description: 'It cannot be resolved yet.' },
   {
     outcome: 'Unresolvable',
     icon: QuestionIcon,
-    description: 'It can never be verifiably resolved.',
+    description: 'It cannot be decided under its Resolution Spec: ambiguous, conflicting, or premature.',
   },
 ];
 
@@ -89,7 +87,7 @@ export default function VoteScreen() {
 
         <p className="text-muted-foreground text-sm leading-relaxed">
           {votingClosed
-            ? 'The voting window has ended — the round can now be finalized.'
+            ? 'The voting window has ended. The round can now be finalized.'
             : 'Votes can only be cast while the assertion is in its voting window.'}
         </p>
 
@@ -113,14 +111,14 @@ export default function VoteScreen() {
     ? 'Select an Outcome'
     : !walletConnected
       ? `Sign in to Vote ${getOutcomeLabel(selected)}`
-      : `Confirm Vote — ${getOutcomeLabel(selected)} · ${MOCK_VOTE_WEIGHT.toLocaleString()} OPAL`;
+      : `Confirm Vote: ${getOutcomeLabel(selected)} · ${MOCK_VOTE_WEIGHT.toLocaleString()} USDC`;
 
   return (
     <div className="flex min-h-screen flex-col px-4 pt-24 pb-8">
       <m.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.35, ease: 'easeOut' }}
+        initial={{ opacity: 0, y: 14, filter: 'blur(8px)' }}
+        animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
         className="mx-auto flex w-full max-w-4xl flex-1 flex-col"
       >
         <div className="flex items-center justify-between">
@@ -162,16 +160,16 @@ export default function VoteScreen() {
               </span>
 
               <span>
-                Your Weight{' '}
+                Your Stake{' '}
                 <span className="text-foreground tabular-nums">
-                  {MOCK_VOTE_WEIGHT.toLocaleString()} OPAL
+                  {MOCK_VOTE_WEIGHT.toLocaleString()} USDC
                 </span>
               </span>
 
               <span>
                 Total Locked{' '}
                 <span className="text-foreground tabular-nums">
-                  {Number(round.totalValidWeight).toLocaleString()} OPAL
+                  {Number(round.totalValidWeight).toLocaleString()} USDC
                 </span>
               </span>
             </div>
@@ -187,22 +185,28 @@ export default function VoteScreen() {
                   onClick={() => setSelected(outcome)}
                   aria-pressed={isSelected}
                   className={cn(
-                    'group flex min-h-40 flex-col items-start justify-between gap-4 border p-6 text-left transition-colors md:p-8',
-                    isSelected
-                      ? 'border-primary bg-primary/10'
-                      : 'border-border hover:border-primary/60 hover:bg-primary/5'
+                    'group border-border relative flex min-h-40 flex-col items-start justify-between gap-4 border p-6 text-left transition-colors md:p-8',
+                    !isSelected && 'hover:border-primary/60 hover:bg-primary/5'
                   )}
                 >
+                  {isSelected && (
+                    <m.span
+                      layoutId="vote-selection"
+                      transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                      className="border-primary bg-primary/10 absolute -inset-px border"
+                    />
+                  )}
+
                   <OutcomeIcon
                     size={32}
                     weight={isSelected ? 'fill' : 'regular'}
                     className={cn(
-                      'transition-colors',
+                      'relative z-10 transition-colors',
                       isSelected ? 'text-primary' : 'text-muted-foreground group-hover:text-primary'
                     )}
                   />
 
-                  <div className="flex flex-col gap-1">
+                  <div className="relative z-10 flex flex-col gap-1">
                     <span
                       className={cn(
                         'font-mono text-lg tracking-[0.15em] uppercase md:text-xl',
@@ -222,8 +226,10 @@ export default function VoteScreen() {
           </div>
 
           <p className="text-muted-foreground/60 text-xs leading-relaxed">
-            Mock vote weight: {MOCK_VOTE_WEIGHT.toLocaleString()} OPAL. Real MagicBlock-weighted
-            TWAV voting is not wired yet — this only updates local state.
+            Mock stake: {MOCK_VOTE_WEIGHT.toLocaleString()} USDC. Weight is linear (1 staked USDC =
+            1 vote) and an outcome needs a supermajority or the vote settles Unresolvable. Real
+            sealed MagicBlock voting is not wired yet — this only updates local state, and the live
+            tally shown here would be hidden in the real protocol.
           </p>
         </div>
 
@@ -266,9 +272,9 @@ function VoteRecorded({
   return (
     <div className="flex min-h-screen flex-col items-center justify-center px-4 py-24">
       <m.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.35, ease: 'easeOut' }}
+        initial={{ opacity: 0, y: 14, filter: 'blur(8px)' }}
+        animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
         className="flex w-full max-w-2xl flex-col items-center gap-10 text-center"
       >
         <div className="flex flex-col items-center gap-4">
@@ -292,7 +298,7 @@ function VoteRecorded({
         </div>
 
         <div className="flex w-full flex-col gap-3 text-left">
-          {(['True', 'False', 'TooEarly', 'Unresolvable'] as ResolutionOutcome[]).map((outcome) => {
+          {(['True', 'False', 'Unresolvable'] as ResolutionOutcome[]).map((outcome) => {
             const votes = Number(round.aggregateVotes[outcome]);
             const share = totalWeight > 0 ? Math.round((votes / totalWeight) * 100) : 0;
             const isUserVote = userVote === outcome;
@@ -310,7 +316,7 @@ function VoteRecorded({
                 </div>
 
                 <div className="bg-muted/40 h-1 w-full">
-                  <div className="bg-primary h-full" style={{ width: `${share}%` }} />
+                  <div className="bg-primary h-full transition-[width] duration-500 ease-out" style={{ width: `${share}%` }} />
                 </div>
               </div>
             );

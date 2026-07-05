@@ -1,16 +1,23 @@
+import { cn } from '@/lib/utils';
+
+// Blueprint-style crosshair at each section corner: a fine "+" with a brighter core.
+const CORNERS = [
+  'top-4 left-4',
+  'top-4 right-4',
+  'bottom-4 left-4',
+  'bottom-4 right-4',
+];
+
 export default function CornerMarkers() {
-    return <div className="absolute inset-0 pointer-events-none">
-        <span
-            className="border-primary absolute bottom-4 left-4 z-20 size-4 border-b border-l"
-        />
-        <span
-            className="border-primary absolute top-5 left-4 z-20 size-4 border-t border-l"
-        />
-        <span
-            className="border-primary absolute right-4 bottom-4 z-20 size-4 border-r border-b"
-        />
-        <span
-            className="border-primary absolute top-5 right-4 z-20 size-4 border-t border-r"
-        />
+  return (
+    <div className="pointer-events-none absolute inset-0">
+      {CORNERS.map((pos) => (
+        <span key={pos} className={cn('absolute z-20 size-4', pos)}>
+          <span className="bg-primary/60 absolute top-1/2 left-0 h-px w-full -translate-y-1/2" />
+          <span className="bg-primary/60 absolute top-0 left-1/2 h-full w-px -translate-x-1/2" />
+          <span className="bg-primary absolute top-1/2 left-1/2 size-[3px] -translate-x-1/2 -translate-y-1/2" />
+        </span>
+      ))}
     </div>
+  );
 }

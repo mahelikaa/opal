@@ -122,7 +122,7 @@ export default function MakeAssertion() {
       bondAmountPUSD: bond,
       state: 'Asserted',
       livenessDeadline: new Date(submittedAt + window_.value * 1000).toISOString(),
-      outcome: 'True',
+      outcome: null,
       finalizedAt: null,
       disputeCount: 0,
       llmDispute: null,
@@ -144,15 +144,14 @@ export default function MakeAssertion() {
   return (
     <div className="relative flex h-screen flex-col overflow-hidden px-4 pt-18 pb-4">
       <m.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.35, ease: 'easeOut' }}
+        initial={{ opacity: 0, y: 14, filter: 'blur(8px)' }}
+        animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
         className="relative z-10 mt-4 flex h-full flex-col overflow-hidden"
       >
         <div className="bg-background border-border flex h-full flex-col overflow-hidden border">
           <SectionHeader
             label="Statement"
-            step="01"
             complete={statementValid}
             open={open === 'statement'}
             onClick={() => toggle('statement')}
@@ -170,7 +169,6 @@ export default function MakeAssertion() {
 
           <SectionHeader
             label="Bond & Window"
-            step="02"
             complete
             open={open === 'params'}
             showShortcut={open === 'params'}
@@ -188,8 +186,7 @@ export default function MakeAssertion() {
           />
 
           <SectionHeader
-            label="Auxiliary Data"
-            step="03"
+            label="Resolution Spec"
             complete={Boolean(auxiliaryData)}
             open={open === 'evidence'}
             onClick={() => toggle('evidence')}
@@ -214,7 +211,6 @@ export default function MakeAssertion() {
 
           <SectionHeader
             label="Claim Summary"
-            step="04"
             complete={statementValid}
             open={open === 'summary'}
             onClick={() => toggle('summary')}

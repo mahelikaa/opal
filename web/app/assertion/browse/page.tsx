@@ -17,6 +17,7 @@ export default function Assertion() {
   const [sortField, setSortField] = useState<SortField>('newest');
   const [stageFilter, setStageFilter] = useState<StageFilter>('All');
   const [quickFilters, setQuickFilters] = useState<QuickFilter[]>([]);
+  const [search, setSearch] = useState('');
 
   const handleToggleQuickFilter = (filter: QuickFilter) => {
     setQuickFilters((current) =>
@@ -28,6 +29,7 @@ export default function Assertion() {
     setSortField('newest');
     setStageFilter('All');
     setQuickFilters([]);
+    setSearch('');
   };
 
   const assertions = useMemo(() => {
@@ -65,14 +67,17 @@ export default function Assertion() {
       return assertion.finalizedAt === null;
     };
 
+    const query = search.trim().toLowerCase();
+
     const filtered = allAssertions.filter((assertion) => {
       const matchesStage =
         stageFilter === 'All' || stageGroups[stageFilter].includes(assertion.state);
       const matchesQuickFilters = quickFilters.every((filter) =>
         matchesQuickFilter(assertion, filter)
       );
+      const matchesSearch = !query || assertion.statement.toLowerCase().includes(query);
 
-      return matchesStage && matchesQuickFilters;
+      return matchesStage && matchesQuickFilters && matchesSearch;
     });
 
     return [...filtered].sort((a, b) => {
@@ -96,7 +101,7 @@ export default function Assertion() {
 
       return sortField === 'oldest' ? createdAtDelta : createdAtDelta * -1;
     });
-  }, [allAssertions, currentAddress, quickFilters, ready, sortField, stageFilter]);
+  }, [allAssertions, currentAddress, quickFilters, ready, search, sortField, stageFilter]);
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -108,6 +113,8 @@ export default function Assertion() {
         quickFilters={quickFilters}
         onToggleQuickFilter={handleToggleQuickFilter}
         onResetFilters={handleResetFilters}
+        search={search}
+        onSearchChange={setSearch}
       />
       <div className="flex-1 px-4 pt-24 pb-8">
         {assertions.length === 0 ? (
@@ -116,7 +123,7 @@ export default function Assertion() {
               No assertions match these filters
             </p>
             <p className="text-sm leading-relaxed">
-              Clear one of the filters or pick a different stage and quick-filter combination.
+              Clear the search or filters, or pick a different stage and quick-filter combination.
             </p>
           </div>
         ) : (
@@ -126,15 +133,19 @@ export default function Assertion() {
             className="grid grid-cols-1 gap-4 md:grid-cols-2"
           >
             <AnimatePresence mode="popLayout">
-              {assertions.map((data) => (
+              {assertions.map((data, index) => (
                 <m.div
                   key={data.id}
                   layout
                   layoutId={`card-wrapper-${data.id}`}
-                  initial={{ opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -6 }}
-                  transition={{ duration: 0.28, ease: 'easeInOut' }}
+                  initial={{ opacity: 0, y: 8, filter: 'blur(4px)' }}
+                  animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                  exit={{ opacity: 0, y: -6, filter: 'blur(4px)' }}
+                  transition={{
+                    duration: 0.28,
+                    ease: 'easeInOut',
+                    delay: Math.min(index * 0.03, 0.24),
+                  }}
                 >
                   <AssertionCard data={data} />
                 </m.div>

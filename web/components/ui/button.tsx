@@ -11,7 +11,7 @@ const buttonVariants = cva(
         default:
           'bg-primary border-primary text-primary-foreground hover:bg-primary/90 before:absolute before:top-0 before:-left-12 before:h-full before:w-8 before:-skew-x-12 before:bg-white/25 before:transition-[left] before:duration-500 hover:before:left-[115%]',
         outline:
-          'from-primary/12 to-primary/3 text-primary hover:from-primary/20 hover:to-primary/8 aria-expanded:bg-muted aria-expanded:text-foreground bg-linear-to-b',
+          'bg-primary/12 border-primary/12 text-primary hover:bg-primary/18 hover:border-primary/18 aria-expanded:bg-muted aria-expanded:text-foreground',
         secondary:
           'bg-secondary text-secondary-foreground hover:bg-secondary/80 aria-expanded:bg-secondary aria-expanded:text-secondary-foreground',
         ghost:

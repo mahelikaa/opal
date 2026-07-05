@@ -14,9 +14,13 @@ import {
   getStageLabel,
 } from '@/lib/assertion-labels';
 import { getTimeRemaining } from '@/lib/helpers';
+import { useHydrated } from '@/hooks/use-hydrated';
 import type { AssertionAccount } from '@/types';
 
 export default function AssertionCard({ data }: { data: AssertionAccount }) {
+  // The countdown is only shown after hydration — the SSR-computed value is ~1s
+  // stale by the time the client hydrates, which triggers a hydration mismatch.
+  const hydrated = useHydrated();
   const [remainingTime, setRemainingTime] = useState(() =>
     data.livenessDeadline ? getTimeRemaining(data.livenessDeadline) : '—'
   );
@@ -35,7 +39,6 @@ export default function AssertionCard({ data }: { data: AssertionAccount }) {
   const contextualMsg = getContextualMessage(data);
   const stage = getStageLabel(data.state);
 
-  // Color coding for finalization status
   const finalizationColor = {
     finalized: 'bg-green-950/40 text-green-300 border-green-900/50',
     pending: 'bg-red-950/40 text-red-300 border-red-900/50',
@@ -48,16 +51,15 @@ export default function AssertionCard({ data }: { data: AssertionAccount }) {
         layout
         layoutId={`statement-card-${data.id}`}
         className={
-          'group ring-muted-foreground/20 hover:ring-primary/40 bg-muted hover:bg-accent divide-border/50 relative flex h-auto w-full cursor-pointer flex-col gap-0 divide-y overflow-hidden ring transition-all duration-200 ease-in-out hover:-translate-y-0.5 hover:shadow-lg'
+          'group ring-muted-foreground/20 hover:ring-primary/50 bg-muted divide-border/50 relative flex h-auto w-full cursor-pointer flex-col gap-0 divide-y overflow-hidden ring transition-shadow duration-200'
         }
       >
-        {/* Row 1: Statement + Finalization Badge */}
         <div className="px-4 py-3">
           <div className="flex items-start justify-between gap-2">
             <m.h2
               layout
               layoutId={`statement-${data.id}`}
-              className="flex-1 truncate text-sm md:text-base"
+              className="group-hover:text-primary flex-1 truncate text-sm transition-colors md:text-base"
             >
               {data.statement}
             </m.h2>
@@ -86,7 +88,6 @@ export default function AssertionCard({ data }: { data: AssertionAccount }) {
           </div>
         </div>
 
-        {/* Row 2: Stage + Consensus */}
         <div className="px-4 py-2.5 text-xs">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
@@ -104,7 +105,6 @@ export default function AssertionCard({ data }: { data: AssertionAccount }) {
           </div>
         </div>
 
-        {/* Row 3: Dispute & Economic Metadata */}
         <div className="px-4 py-2.5 text-xs">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
@@ -133,7 +133,6 @@ export default function AssertionCard({ data }: { data: AssertionAccount }) {
           </div>
         </div>
 
-        {/* Row 4: Contextual Message */}
         <div className="text-muted-foreground px-4 py-2.5 text-xs">
           <div className="flex items-center gap-2">
             {finalizationStatus === 'pending' && (
@@ -147,17 +146,19 @@ export default function AssertionCard({ data }: { data: AssertionAccount }) {
           </div>
         </div>
 
-        {/* Row 5: Timing Context */}
         <div className="px-4 py-2.5 text-xs">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-2">
               <ClockIcon weight="fill" className="text-muted-foreground size-3.5" />
               <span className="text-muted-foreground font-mono tabular-nums">
-                {remainingTime === 'Expired' ? 'Liveness expired' : `${remainingTime} remaining`}
+                {!hydrated
+                  ? '—'
+                  : remainingTime === 'Expired'
+                    ? 'Liveness expired'
+                    : `${remainingTime} remaining`}
               </span>
             </div>
 
-            {/* Voting Weight Display */}
             {data.voteResolutionRound && data.voteResolutionRound.totalValidWeight > 0n && (
               <div className="flex items-center gap-2 font-mono">
                 <span className="text-muted-foreground text-[11px] tracking-widest uppercase">

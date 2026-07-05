@@ -138,8 +138,8 @@ export const ASSERTIONS: AssertionAccount[] = [
       outcomeCode: 0,
       outcome: null, // pending — the resolver has not posted yet
       promptHash: 'k3p8m2n1o4l7091p6k5m3n2l1j8p7k19',
-      resolvedAt: null, // FIXED
-      challengeDeadline: null, // FIXED
+      resolvedAt: null,
+      challengeDeadline: null,
     },
     voteResolutionRound: null,
     createdAt: '2026-04-23T15:00:00Z',
@@ -186,9 +186,9 @@ export const ASSERTIONS: AssertionAccount[] = [
     },
     voteResolutionRound: {
       pubkey: 'VTRr5FgGhIjKlM2pZuAvBxNgNiLcUrSe',
-      votingStartsAt: null, // FIXED
-      votingDeadline: null, // FIXED
-      totalValidWeight: 0n, // FIXED
+      votingStartsAt: null,
+      votingDeadline: null,
+      totalValidWeight: 0n,
       aggregateVotes: {
         True: 0,
         False: 0,

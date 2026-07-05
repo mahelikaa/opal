@@ -53,7 +53,7 @@ export default function SummarySection({
               <p className="text-foreground text-xl leading-relaxed md:text-2xl">
                 {statement || (
                   <span className="text-muted-foreground/60 text-base md:text-lg">
-                    No statement yet — start with step 01
+                    No statement yet — start with the Statement section
                   </span>
                 )}
               </p>
@@ -85,7 +85,7 @@ export default function SummarySection({
 
               <div className="border-border min-w-0 border-l pl-4">
                 <div className="text-muted-foreground/75 font-mono text-[11px] tracking-[0.2em] uppercase">
-                  Aux Hash
+                  Spec Hash
                 </div>
                 <div className="text-foreground mt-1 truncate font-mono text-base">
                   {auxiliaryData ? hashPreview(auxiliaryData) : '—'}

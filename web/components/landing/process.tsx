@@ -4,10 +4,14 @@ import CornerMarkers from '../common/corner-markers';
 export default function Process() {
   return (
     <>
-      <section className="relative overflow-x-clip px-4 py-24">
-        <h2 className="mb-16 text-center text-2xl uppercase md:text-3xl">
-          Resolution advances in three layers
-        </h2>
+      <section className="relative overflow-x-clip px-6 py-24 md:px-16">
+        <div className="mb-16 flex flex-col items-center gap-4">
+          <p className="text-primary font-mono text-xs tracking-[0.3em] uppercase">How it works</p>
+
+          <h2 className="text-center text-2xl uppercase md:text-3xl">
+            Resolution advances in three layers
+          </h2>
+        </div>
 
         <div className="grid gap-4 md:grid-cols-3">
           <article className="border-border/50 hover:border-border bg-background/70 group min-h-70 border py-6 shadow-sm backdrop-blur transition duration-300 ease-out">
@@ -770,27 +774,3 @@ function EscalateIllustration() {
     </svg>
   );
 }
-
-// function Dispute() {
-//   return (
-//     <svg
-//       width="209"
-//       height="181"
-//       viewBox="0 0 209 181"
-//       fill="none"
-//       xmlns="http://www.w3.org/2000/svg"
-//     >
-//       <rect
-//         x="0.866025"
-//         width="119"
-//         height="119"
-//         transform="matrix(0.866025 -0.5 0.866025 0.5 0.549009 60.433)"
-//         fill="#141414"
-//         stroke="#FF6464"
-//         strokeDasharray="4 8"
-//       />
-//       <path d="M0.432983 60L0.432983 120L104.356 180V120" stroke="#FF6464" stroke-dasharray="4 8" />
-//       <path d="M208.356 59.8537V119.854L104.433 179.854" stroke="#FF6464" stroke-dasharray="4 8" />
-//     </svg>
-//   );
-// }

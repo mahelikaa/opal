@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 
-import { CaretDownIcon, CheckIcon } from '@phosphor-icons/react';
+import { CaretDownIcon } from '@phosphor-icons/react';
 import { m } from 'motion/react';
 
 import { cn } from '@/lib/utils';
@@ -12,7 +12,6 @@ export default function SectionHeader({
   peek,
   showShortcut,
   shortcutHint,
-  step,
   complete,
 }: {
   label: string;
@@ -21,9 +20,7 @@ export default function SectionHeader({
   peek?: ReactNode;
   showShortcut?: boolean;
   shortcutHint?: string;
-  /** Two-digit step marker, e.g. "01". */
-  step?: string;
-  /** Marks the section's input as filled/valid — turns the step marker lime. */
+  /** Marks the section's input as filled/valid — lights the status marker lime. */
   complete?: boolean;
 }) {
   return (
@@ -36,21 +33,13 @@ export default function SectionHeader({
         open && 'bg-muted/30'
       )}
     >
-      <div className="flex flex-1 items-center gap-3">
-        {step && (
-          <span
-            className={cn(
-              'flex size-7 shrink-0 items-center justify-center border font-mono text-[11px] tracking-widest transition-colors',
-              complete
-                ? 'border-primary/60 text-primary'
-                : open
-                  ? 'border-foreground/40 text-foreground'
-                  : 'border-border text-muted-foreground'
-            )}
-          >
-            {complete ? <CheckIcon weight="bold" className="size-3" /> : step}
-          </span>
-        )}
+      <div className="flex flex-1 items-center gap-3.5">
+        <span
+          className={cn(
+            'size-1.5 shrink-0 transition-colors',
+            complete ? 'bg-primary' : open ? 'bg-foreground/60' : 'bg-muted-foreground/30'
+          )}
+        />
         <span
           className={cn(
             'font-mono text-sm tracking-widest uppercase transition-colors md:text-base',

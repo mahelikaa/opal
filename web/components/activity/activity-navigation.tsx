@@ -12,6 +12,7 @@ import {
   WarningOctagonIcon,
 } from '@phosphor-icons/react';
 import { CheckIcon, CopySimpleIcon } from '@phosphor-icons/react';
+import { motion as m } from 'motion/react';
 
 import { Button } from '../ui/button';
 
@@ -83,14 +84,23 @@ export default function ActivityNavigation() {
                 key={href}
                 aria-current={isActive ? 'page' : undefined}
                 className={
-                  `flex snap-center flex-col items-center justify-center gap-1 rounded-none px-3 py-1.5 whitespace-nowrap transition-colors duration-150 md:flex-row md:gap-2 ` +
+                  `relative flex snap-center flex-col items-center justify-center gap-1 rounded-none px-3 py-1.5 whitespace-nowrap transition-colors duration-150 md:flex-row md:gap-2 ` +
                   (isActive
-                    ? 'text-primary bg-primary/10 ring-primary/10 ring-1'
+                    ? 'text-primary'
                     : 'text-muted-foreground hover:bg-muted-foreground/5 hover:text-foreground')
                 }
               >
-                <Icon className="size-4" />
-                <span className="font-mono text-xs tracking-widest uppercase">{label}</span>
+                {isActive && (
+                  <m.span
+                    layoutId="activity-tab-indicator"
+                    transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                    className="bg-primary/10 ring-primary/10 absolute inset-0 ring-1"
+                  />
+                )}
+                <Icon className="relative z-10 size-4" />
+                <span className="relative z-10 font-mono text-xs tracking-widest uppercase">
+                  {label}
+                </span>
               </Link>
             );
           })}

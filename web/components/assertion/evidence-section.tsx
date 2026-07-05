@@ -37,11 +37,11 @@ export default function EvidenceSection({
             <div className="mb-3 flex items-center gap-2">
               <FileTextIcon size={16} className="text-muted-foreground/50" />
               <span className="text-muted-foreground/50 font-mono text-xs tracking-widest uppercase">
-                Auxiliary Data
+                Resolution Spec
               </span>
             </div>
             <label htmlFor="auxiliary-data" className="sr-only">
-              Auxiliary Data
+              Resolution Spec
             </label>
             <Textarea
               id="auxiliary-data"
@@ -55,7 +55,7 @@ export default function EvidenceSection({
                 {!auxiliaryData && statementLength > 20 ? (
                   <Warning
                     key="ew"
-                    msg="No auxiliary data - higher chance of Unresolvable outcome"
+                    msg="No resolution spec - higher chance of Unresolvable outcome"
                   />
                 ) : (
                   <m.span
@@ -64,7 +64,8 @@ export default function EvidenceSection({
                     animate={{ opacity: 1 }}
                     className="text-muted-foreground/85 text-xs md:text-xs"
                   >
-                    Optional context. Only the hash is stored onchain.
+                    The source of truth for how this statement resolves. Stored offchain — only its
+                    hash goes onchain.
                   </m.span>
                 )}
               </AnimatePresence>

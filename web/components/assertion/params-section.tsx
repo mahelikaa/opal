@@ -60,7 +60,6 @@ export default function ParamsSection({
             className="flex h-full flex-col p-6"
           >
             <div className="grid flex-1 grid-cols-1 gap-8 md:grid-cols-2">
-              {/* Dispute window */}
               <div className="flex flex-col justify-center gap-4">
                 <div className="flex items-center gap-2">
                   <ClockIcon size={16} className="text-muted-foreground/50" />
@@ -86,7 +85,6 @@ export default function ParamsSection({
                 </p>
               </div>
 
-              {/* Bond & timing */}
               <div className="border-muted-foreground/20 flex flex-col justify-center gap-6 border-t pt-6 md:border-t-0 md:border-l md:pt-0 md:pl-8">
                 <div className="flex flex-col gap-2">
                   <div className="flex items-center gap-2">

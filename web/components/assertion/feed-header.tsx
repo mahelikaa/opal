@@ -1,4 +1,8 @@
+import { MagnifyingGlassIcon } from '@phosphor-icons/react';
+
 import type { QuickFilter, SortField, StageFilter } from '@/types/filters';
+
+import { cn } from '@/lib/utils';
 
 import { Button } from '../ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
@@ -11,6 +15,8 @@ interface HeaderProps {
   quickFilters: QuickFilter[];
   onToggleQuickFilter: (value: QuickFilter) => void;
   onResetFilters: () => void;
+  search: string;
+  onSearchChange: (value: string) => void;
 }
 
 const SORT_FIELDS: Array<{ value: SortField; label: string }> = [
@@ -47,6 +53,8 @@ export default function Header({
   quickFilters,
   onToggleQuickFilter,
   onResetFilters,
+  search,
+  onSearchChange,
 }: HeaderProps) {
   return (
     <div className="bg-background border-border sticky top-16 z-10 flex h-16 w-full items-center justify-center border-b">
@@ -115,10 +123,13 @@ export default function Header({
               <Button
                 key={filter.value}
                 type="button"
-                variant={isActive ? 'default' : 'outline'}
+                variant={isActive ? 'default' : 'ghost'}
                 aria-pressed={isActive}
                 onClick={() => onToggleQuickFilter(filter.value)}
-                className="border-muted-foreground/40 px-2.5"
+                className={cn(
+                  'px-2.5',
+                  !isActive && 'text-muted-foreground hover:text-foreground'
+                )}
               >
                 {filter.label}
               </Button>
@@ -134,6 +145,18 @@ export default function Header({
             Reset
           </Button>
         </div>
+
+        <label className="border-muted-foreground/20 bg-muted/10 focus-within:border-muted-foreground/40 ml-auto flex h-9 w-56 shrink-0 items-center gap-2 border px-3 transition-colors lg:w-72">
+          <MagnifyingGlassIcon className="text-muted-foreground/50 size-4 shrink-0" />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => onSearchChange(e.target.value)}
+            placeholder="SEARCH ASSERTIONS..."
+            aria-label="Search assertions"
+            className="placeholder:text-muted-foreground/40 w-full bg-transparent font-mono text-xs tracking-widest uppercase outline-none"
+          />
+        </label>
       </div>
     </div>
   );

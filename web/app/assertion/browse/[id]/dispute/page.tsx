@@ -138,15 +138,14 @@ export default function DisputeAssertion() {
   return (
     <div className="relative flex h-screen flex-col overflow-hidden px-4 pt-18 pb-4">
       <m.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.35, ease: 'easeOut' }}
+        initial={{ opacity: 0, y: 14, filter: 'blur(8px)' }}
+        animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
         className="relative z-10 mt-4 flex h-full flex-col overflow-hidden"
       >
         <div className="bg-background border-border flex h-full flex-col overflow-hidden border">
           <SectionHeader
             label="Reason"
-            step="01"
             complete={Boolean(reason.trim())}
             open={open === 'reason'}
             onClick={() => toggle('reason')}
@@ -198,7 +197,6 @@ export default function DisputeAssertion() {
 
           <SectionHeader
             label={mode === 'dispute' ? 'Claim Under Dispute' : 'LLM Resolution Under Challenge'}
-            step="02"
             complete
             open={open === 'claim'}
             onClick={() => toggle('claim')}
@@ -222,15 +220,14 @@ export default function DisputeAssertion() {
 
               <p className="text-muted-foreground/85 text-xs">
                 {mode === 'dispute'
-                  ? 'Filing a dispute routes the statement to the Switchboard LLM council for resolution.'
-                  : 'Challenging the LLM resolution escalates the statement to private OPAL voting.'}
+                  ? 'Filing a dispute routes the statement to the trusted LLM resolver for a verdict under its Resolution Spec.'
+                  : 'Challenging the LLM resolution escalates the statement to a private USDC-staked vote.'}
               </p>
             </div>
           </Collapse>
 
           <SectionHeader
             label="Stake Summary"
-            step="03"
             complete={Boolean(reason.trim())}
             open={open === 'summary'}
             onClick={() => toggle('summary')}
@@ -255,6 +252,11 @@ export default function DisputeAssertion() {
 
                 <SummaryMeta label="If Incorrect" value="Bond Slashed" />
               </div>
+
+              <p className="text-muted-foreground/85 mx-auto mt-6 max-w-3xl text-center text-xs">
+                If the final outcome is Unresolvable, the dispute settles no-fault — nobody is
+                slashed and your bond is returned.
+              </p>
             </div>
           </Collapse>
 

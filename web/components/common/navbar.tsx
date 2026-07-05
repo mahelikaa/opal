@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 
-import { ListIcon, XIcon } from '@phosphor-icons/react';
+import { ListIcon, MagnifyingGlassIcon, XIcon } from '@phosphor-icons/react';
 import { AnimatePresence } from 'motion/react';
 
 import { type ReactNode } from 'react';
@@ -12,6 +12,7 @@ import { type ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 
 import { Button } from '../ui/button';
+import { Kbd } from '../ui/kbd';
 import NavbarMobile from './mobile-navbar';
 import { NavbarAuth } from './navbar-auth';
 import { SearchDialog } from './search-dialog';
@@ -71,16 +72,17 @@ export default function Navbar() {
           <span className="font-heading text-lg uppercase">Opal</span>
         </Link>
         <div className="hidden items-center gap-4 md:flex">
-          <Button
+          <button
             type="button"
-            variant="ghost"
-            size="sm"
             onClick={() => setIsSearchOpen(true)}
-            className="bg-muted/40 hover:bg-muted/70 w-64 justify-between px-3 font-normal"
+            className="border-border bg-muted/30 hover:border-muted-foreground/40 hover:bg-muted/50 group flex h-9 w-64 cursor-pointer items-center gap-2.5 border px-3 transition-colors"
           >
-            <div className="text-muted-foreground font-mono text-xs tracking-widest uppercase">Search</div>
-            <kbd className="bg-muted text-muted-foreground rounded text-xs">⌘ + K</kbd>
-          </Button>
+            <MagnifyingGlassIcon className="text-muted-foreground/50 group-hover:text-muted-foreground size-4 shrink-0 transition-colors" />
+            <span className="text-muted-foreground/70 group-hover:text-muted-foreground font-mono text-xs tracking-widest uppercase transition-colors">
+              Find Account
+            </span>
+            <Kbd className="ml-auto">⌘K</Kbd>
+          </button>
           <NavbarAuth layout="desktop" />
         </div>
         <div className="flex md:hidden">

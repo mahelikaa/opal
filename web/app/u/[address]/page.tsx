@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 
+import Rise from '@/components/common/rise';
 import { Button } from '@/components/ui/button';
 import { filterAssertionsByAddress } from '@/data/assertion';
 import { getOutcomeLabel, getStageLabel } from '@/lib/assertion-labels';
@@ -20,11 +21,13 @@ function settledDisputeRecord(assertions: AssertionAccount[]) {
   let incorrect = 0;
 
   for (const assertion of assertions) {
-    if (assertion.llmDispute?.settled) {
+    // disputeCorrect === null on a settled dispute is a no-fault (Unresolvable)
+    // settlement — it counts as neither correct nor incorrect.
+    if (assertion.llmDispute?.settled && assertion.llmDispute.disputeCorrect !== null) {
       if (assertion.llmDispute.disputeCorrect) correct += 1;
       else incorrect += 1;
     }
-    if (assertion.voteDispute?.settled) {
+    if (assertion.voteDispute?.settled && assertion.voteDispute.disputeCorrect !== null) {
       if (assertion.voteDispute.disputeCorrect) correct += 1;
       else incorrect += 1;
     }
@@ -45,16 +48,15 @@ export default function Activity() {
 
   if (assertions.length === 0) {
     return (
-      <div className="flex min-h-[calc(100vh-16rem)] flex-col items-center justify-center gap-4 px-4 text-center">
-        <span className="text-muted-foreground font-mono text-xs tracking-widest uppercase">
-          No Activity Yet
-        </span>
+      <div className="flex min-h-[calc(100vh-16rem)] flex-col items-center justify-center gap-5 px-4 text-center">
+        <h1 className="text-2xl uppercase md:text-3xl">No Activity Yet</h1>
 
-        <p className="text-muted-foreground max-w-md text-sm leading-relaxed">
+        <p className="text-muted-foreground max-w-md text-base leading-relaxed">
           This address has no assertions, disputes, or votes on record.
         </p>
 
         <Button
+          size="lg"
           variant="outline"
           className="uppercase"
           nativeButton={false}
@@ -68,22 +70,32 @@ export default function Activity() {
 
   return (
     <div className="flex flex-col gap-8 px-4 py-6 sm:px-6 sm:py-8">
-      {top && <Hero top={top} />}
-      <StatsGrid stats={stats} assertions={assertions} />
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+      {top && (
+        <Rise>
+          <Hero top={top} />
+        </Rise>
+      )}
+
+      <Rise delay={0.08}>
+        <StatsGrid stats={stats} assertions={assertions} />
+      </Rise>
+
+      <Rise delay={0.16} className="grid grid-cols-1 gap-6 xl:grid-cols-3">
         <ProtocolActivity assertions={assertions} />
         <ResolutionBreakdown assertions={assertions} />
         <ReputationPanel assertions={assertions} />
-      </div>
+      </Rise>
 
-      <RecentAssertions assertions={assertions} />
+      <Rise delay={0.24}>
+        <RecentAssertions assertions={assertions} />
+      </Rise>
     </div>
   );
 }
 
 function Hero({ top }: { top: AssertionAccount }) {
   const disputes = top.disputeCount || 0;
-  const opalLocked = Number(top.voteResolutionRound?.totalValidWeight ?? 0);
+  const stakeLocked = Number(top.voteResolutionRound?.totalValidWeight ?? 0);
   const votingDeadline = top.voteResolutionRound?.votingDeadline;
   const votingActive = Boolean(votingDeadline && new Date(votingDeadline) > new Date());
   const consensus = top.voteResolutionRound?.finalOutcome ?? top.outcome;
@@ -107,7 +119,9 @@ function Hero({ top }: { top: AssertionAccount }) {
         <div className="flex items-center justify-center gap-6 font-mono text-xs tracking-widest uppercase tabular-nums">
           <span className="text-primary">{disputes} Disputes</span>
 
-          <span className="text-primary">{Intl.NumberFormat().format(opalLocked)} OPAL Locked</span>
+          <span className="text-primary">
+            {Intl.NumberFormat().format(stakeLocked)} USDC Staked
+          </span>
 
           {votingActive && <span className="text-primary">Voting Active</span>}
         </div>
@@ -136,7 +150,7 @@ function StatsGrid({ stats, assertions }: { stats: Stats; assertions: AssertionA
   const data = [
     { label: 'Assertions Created', value: String(stats.totalAssertions) },
     { label: 'Total Bonded USDC', value: String(stats.totalBondPUSD) },
-    { label: 'OPAL Locked', value: Intl.NumberFormat().format(stats.totalValidWeight || 0) },
+    { label: 'Vote Stake Locked', value: Intl.NumberFormat().format(stats.totalValidWeight || 0) },
     { label: 'Disputes Won', value: String(record.correct) },
     { label: 'Dispute Accuracy', value: accuracy },
     { label: 'Active Assertions', value: String(stats.activeAssertions) },
@@ -224,28 +238,21 @@ function ProtocolActivity({ assertions }: { assertions: AssertionAccount[] }) {
 }
 
 function ResolutionBreakdown({ assertions }: { assertions: AssertionAccount[] }) {
-  const counters = { true: 0, false: 0, tooEarly: 0, unresolvable: 0 };
+  const counters = { true: 0, false: 0, unresolvable: 0 };
 
   for (const assertion of assertions) {
     const outcome = assertion.voteResolutionRound?.finalOutcome ?? assertion.outcome;
     if (outcome === 'True') counters.true += 1;
     if (outcome === 'False') counters.false += 1;
-    if (outcome === 'TooEarly') counters.tooEarly += 1;
     if (outcome === 'Unresolvable') counters.unresolvable += 1;
   }
 
-  const total = counters.true + counters.false + counters.tooEarly + counters.unresolvable || 1;
+  const total = counters.true + counters.false + counters.unresolvable || 1;
   const pct = (value: number) => `${Math.round((value / total) * 100)}%`;
 
   const data = [
     { label: 'True', value: counters.true, width: pct(counters.true), color: 'bg-primary' },
     { label: 'False', value: counters.false, width: pct(counters.false), color: 'bg-red-400' },
-    {
-      label: 'Too Early',
-      value: counters.tooEarly,
-      width: pct(counters.tooEarly),
-      color: 'bg-cyan-400',
-    },
     {
       label: 'Unresolvable',
       value: counters.unresolvable,

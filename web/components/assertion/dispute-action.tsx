@@ -10,7 +10,7 @@ import { getOutcomeLabel } from '@/lib/assertion-labels';
 import { getTimeRemaining, isDeadlinePast } from '@/lib/helpers';
 import type { AssertionAccount, ResolutionOutcome } from '@/types';
 
-const OUTCOMES: ResolutionOutcome[] = ['True', 'False', 'TooEarly', 'Unresolvable'];
+const OUTCOMES: ResolutionOutcome[] = ['True', 'False', 'Unresolvable'];
 
 interface DisputeActionProps {
   assertion: AssertionAccount;
@@ -63,9 +63,9 @@ export default function DisputeAction({
       <Panel
         eyebrow="Awaiting Resolution"
         title="Awaiting LLM Verdict"
-        note="This assertion has been disputed. The Switchboard LLM council posts a verdict, then anyone can submit it on-chain (mirrors submit_llm_resolution — permissionless). Mock: pick the council's verdict to simulate the feeds."
+        note="This assertion has been disputed. The trusted LLM resolver reviews the statement under its Resolution Spec and posts a verdict on-chain (mirrors submit_llm_resolution). Mock: pick the resolver's verdict."
       >
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
           {OUTCOMES.map((outcome) => (
             <Button
               key={outcome}
@@ -102,7 +102,7 @@ export default function DisputeAction({
         title={`LLM Proposed ${getOutcomeLabel(assertion.llmResolutionRound?.outcome ?? null)}`}
         note={`Challenge window closes in ${getTimeRemaining(
           assertion.llmResolutionRound?.challengeDeadline ?? undefined
-        )}. Challenging escalates the assertion to private OPAL voting.`}
+        )}. Challenging escalates the assertion to a private USDC-staked vote.`}
       >
         <DisputeLink href={disputeHref} label="Challenge LLM Resolution" />
       </Panel>
@@ -137,7 +137,7 @@ export default function DisputeAction({
                 Your Vote Is In: {getOutcomeLabel(userVote)}
               </span>
             }
-            note={`Voting closes in ${closesIn}. The leading outcome becomes final once the window ends.`}
+            note={`Voting closes in ${closesIn}. An outcome that reaches a supermajority becomes final once the window ends — otherwise the vote settles Unresolvable.`}
           >
             <Button
               size="lg"
@@ -154,8 +154,8 @@ export default function DisputeAction({
       return (
         <Panel
           eyebrow="Voting Live"
-          title="OPAL Voting Is Live"
-          note={`Voting closes in ${closesIn}. Weigh in with your OPAL — the leading outcome becomes the final resolution.`}
+          title="Staked Voting Is Live"
+          note={`Voting closes in ${closesIn}. Stake USDC to vote (1 USDC = 1 vote) — an outcome that reaches a supermajority becomes final, otherwise the vote settles Unresolvable.`}
         >
           <Button size="lg" nativeButton={false} render={<Link href={voteHref} />}>
             Cast Your Vote
@@ -168,7 +168,7 @@ export default function DisputeAction({
       <Panel
         eyebrow="Action Available"
         title="Voting Closed"
-        note="The voting window has ended. Anyone can now finalize the vote resolution — the leading outcome becomes final and both disputes settle (mirrors finalize_vote_resolution)."
+        note="The voting window has ended. Anyone can now finalize the vote resolution — an outcome with a supermajority becomes final (otherwise Unresolvable) and both disputes settle (mirrors finalize_vote_resolution)."
       >
         <Button size="lg" onClick={onFinalize}>
           Finalize Vote Resolution
@@ -180,7 +180,7 @@ export default function DisputeAction({
   if (assertion.state === 'Resolved') {
     const resolutionPath =
       assertion.disputeCount === 2
-        ? 'OPAL Voting'
+        ? 'Staked Vote'
         : assertion.disputeCount === 1
           ? 'LLM Resolution'
           : 'Optimistic (Undisputed)';
@@ -196,7 +196,7 @@ export default function DisputeAction({
         }
         note="This assertion is finalized. The outcome is irreversible and bonds have been settled — integrators can safely consume it."
       >
-        <div className="grid grid-cols-2 gap-6 md:grid-cols-3">
+        <div className="flex flex-wrap items-start justify-center gap-x-14 gap-y-6">
           <SettlementMeta label="Resolution Path" value={resolutionPath} />
 
           {assertion.finalizedAt && (
@@ -207,17 +207,11 @@ export default function DisputeAction({
           )}
 
           {assertion.llmDispute && (
-            <SettlementMeta
-              label="First Dispute"
-              value={settlementLabel(assertion.llmDispute.disputeCorrect)}
-            />
+            <SettlementMeta label="First Dispute" value={settlementLabel(assertion.llmDispute)} />
           )}
 
           {assertion.voteDispute && (
-            <SettlementMeta
-              label="Second Dispute"
-              value={settlementLabel(assertion.voteDispute.disputeCorrect)}
-            />
+            <SettlementMeta label="Second Dispute" value={settlementLabel(assertion.voteDispute)} />
           )}
         </div>
       </Panel>
@@ -227,9 +221,17 @@ export default function DisputeAction({
   return null;
 }
 
-function settlementLabel(disputeCorrect: boolean | null) {
-  if (disputeCorrect === null) return 'Unsettled';
-  return disputeCorrect ? 'Correct — Bond Won' : 'Incorrect — Bond Slashed';
+// An Unresolvable settlement is no-fault: the bond is returned and nobody is slashed,
+// so disputeCorrect stays null even though the dispute is settled.
+function settlementLabel(dispute: {
+  settled: boolean;
+  disputeCorrect: boolean | null;
+  settlementResolution: ResolutionOutcome | null;
+}) {
+  if (!dispute.settled) return 'Unsettled';
+  if (dispute.settlementResolution === 'Unresolvable') return 'No Fault — Bond Returned';
+  if (dispute.disputeCorrect === null) return 'Unsettled';
+  return dispute.disputeCorrect ? 'Correct — Bond Won' : 'Incorrect — Bond Slashed';
 }
 
 function SettlementMeta({ label, value }: { label: string; value: string }) {

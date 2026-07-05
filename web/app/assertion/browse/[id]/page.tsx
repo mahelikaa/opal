@@ -4,13 +4,12 @@ import Link from 'next/link';
 import { notFound, useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-import { XIcon } from '@phosphor-icons/react';
-import { AnimatePresence, motion as m } from 'motion/react';
-
 import DisputeAction from '@/components/assertion/dispute-action';
 import Timeline from '@/components/assertion/timeline';
+import Rise from '@/components/common/rise';
 import VotingPanel from '@/components/assertion/voting-panel';
 import { Button } from '@/components/ui/button';
+import Modal from '@/components/ui/modal';
 import { getOutcomeLabel, getStageLabel } from '@/lib/assertion-labels';
 import {
   finalizeAssertion,
@@ -154,12 +153,14 @@ export default function StatementPage() {
         {/* my-auto centers the whole block vertically when it's shorter than the
             viewport, and degrades to normal scrolling when it isn't. */}
         <div className="my-auto flex w-full flex-col items-center gap-10">
-        <AssertionSection
-          assertion={assertion}
-          onEvidenceClick={() => setShowEvidenceModal(true)}
-        />
+        <Rise className="w-full">
+          <AssertionSection
+            assertion={assertion}
+            onEvidenceClick={() => setShowEvidenceModal(true)}
+          />
+        </Rise>
 
-        <div className="flex w-full flex-col items-center gap-6">
+        <Rise delay={0.12} className="flex w-full flex-col items-center gap-6">
           <DisputeAction
             assertion={assertion}
             userVote={userVote}
@@ -186,81 +187,49 @@ export default function StatementPage() {
               )}
             </div>
           )}
-        </div>
+        </Rise>
         </div>
       </div>
 
-      <div className="shrink-0 px-4 pb-4">
+      <Rise delay={0.2} className="shrink-0">
         <Timeline statement={assertion} />
-      </div>
+      </Rise>
 
-      {/* Evidence Modal */}
-      <AnimatePresence>
-        {showEvidenceModal && (
-          <m.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setShowEvidenceModal(false)}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
-          >
-            <m.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              onClick={(e) => e.stopPropagation()}
-              className="bg-background border-border relative mx-4 max-h-96 w-full max-w-2xl overflow-y-auto border shadow-2xl shadow-black/60"
-            >
-              <div className="border-border flex items-center justify-between border-b px-5 py-3">
-                <div className="flex items-center gap-2.5">
-                  <span className="bg-primary size-1.5" />
-                  <h2 className="text-muted-foreground font-mono text-[11px] tracking-[0.2em] uppercase">
-                    Auxiliary Evidence
-                  </h2>
-                </div>
-                <button
-                  onClick={() => setShowEvidenceModal(false)}
-                  className="text-muted-foreground/50 hover:text-foreground transition-colors"
-                  aria-label="Close"
-                >
-                  <XIcon className="size-4" />
-                </button>
-              </div>
+      <Modal
+        open={showEvidenceModal}
+        onClose={() => setShowEvidenceModal(false)}
+        title="Resolution Spec"
+      >
+        <div className="space-y-5 p-6">
+          <div className="border-border border-l-2 pl-4">
+            <p className="text-muted-foreground mb-1.5 font-mono text-[10px] tracking-[0.2em] uppercase">
+              Spec Hash
+            </p>
+            <p className="font-mono text-sm break-all">{assertion.auxiliaryHash}</p>
+          </div>
 
-              <div className="space-y-4 p-5">
-                <div>
-                  <p className="text-muted-foreground mb-2 font-mono text-xs tracking-widest uppercase">
-                    Evidence Hash
-                  </p>
-                  <p className="font-mono text-sm break-all">{assertion.auxiliaryHash}</p>
-                </div>
+          {assertion.auxiliaryUrl && (
+            <div className="border-border border-l-2 pl-4">
+              <p className="text-muted-foreground mb-1.5 font-mono text-[10px] tracking-[0.2em] uppercase">
+                Source
+              </p>
+              <Link
+                href={assertion.auxiliaryUrl}
+                target="_blank"
+                rel="noreferrer noopener"
+                className="text-primary hover:text-primary/80 font-mono text-xs tracking-widest uppercase underline underline-offset-4 transition-colors"
+              >
+                Open Resolution Spec →
+              </Link>
+            </div>
+          )}
 
-                <div>
-                  <p className="text-muted-foreground mb-2 font-mono text-xs tracking-widest uppercase">
-                    Source
-                  </p>
-                  {assertion.auxiliaryUrl && (
-                    <Link
-                      href={assertion.auxiliaryUrl}
-                      target="_blank"
-                      rel="noreferrer noopener"
-                      className="text-primary hover:text-primary/80 font-mono text-xs tracking-widest uppercase underline underline-offset-4 transition-colors"
-                    >
-                      Open Evidence Source →
-                    </Link>
-                  )}
-                </div>
-
-                <div className="text-muted-foreground/75 pt-2 text-xs leading-relaxed">
-                  Auxiliary evidence supplied by the asserter to guide LLM and voting
-                  interpretation.
-                </div>
-              </div>
-            </m.div>
-          </m.div>
-        )}
-      </AnimatePresence>
+          <p className="text-muted-foreground/75 border-border border-t pt-4 text-xs leading-relaxed">
+            The asserter&apos;s Resolution Spec — the source of truth resolvers and voters use to
+            decide the outcome. Only its hash is stored on-chain.
+          </p>
+        </div>
+      </Modal>
     </div>
   );
 }
@@ -282,7 +251,7 @@ function AssertionSection({
         </h1>
 
         <Button onClick={onEvidenceClick} variant="outline" size="md" className="px-6">
-          View Evidence
+          View Resolution Spec
         </Button>
       </div>
 

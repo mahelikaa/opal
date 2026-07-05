@@ -5,7 +5,7 @@ import { getTimeRemaining } from '@/lib/helpers';
 import { cn } from '@/lib/utils';
 import type { ResolutionOutcome, VoteResolutionRound } from '@/types';
 
-const OUTCOMES: ResolutionOutcome[] = ['True', 'False', 'TooEarly', 'Unresolvable'];
+const OUTCOMES: ResolutionOutcome[] = ['True', 'False', 'Unresolvable'];
 
 interface VotingPanelProps {
   round: VoteResolutionRound;
@@ -25,10 +25,10 @@ export default function VotingPanel({ round, votingClosed, userVote }: VotingPan
       </h2>
 
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-        <Meta label="Total Weight Locked" value={`${totalWeight.toLocaleString()} OPAL`} />
+        <Meta label="Total Stake Locked" value={`${totalWeight.toLocaleString()} USDC`} />
 
         <Meta
-          label={round.finalOutcome && votingClosed ? 'Final Outcome' : 'Leading Outcome'}
+          label={round.finalOutcome && votingClosed ? 'Final Outcome' : 'Provisional Outcome'}
           value={round.finalOutcome ? getOutcomeLabel(round.finalOutcome) : 'Pending'}
         />
 
@@ -73,12 +73,17 @@ export default function VotingPanel({ round, votingClosed, userVote }: VotingPan
               </div>
 
               <div className="bg-muted/40 h-1 w-full">
-                <div className="bg-primary h-full" style={{ width: `${share}%` }} />
+                <div className="bg-primary h-full transition-[width] duration-500 ease-out" style={{ width: `${share}%` }} />
               </div>
             </div>
           );
         })}
       </div>
+
+      <p className="text-muted-foreground/60 text-xs leading-relaxed">
+        Mock tally — real votes are sealed during the voting window (only the aggregate outcome is
+        committed on-chain), and an outcome needs a supermajority or the vote settles Unresolvable.
+      </p>
     </section>
   );
 }
