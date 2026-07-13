@@ -86,7 +86,10 @@ export default function VotesPage() {
 
   const rows = votes.filter((v) => {
     const matchStatus = statusFilter === 'ALL' || v.status === statusFilter;
+    // Alignment only exists for settled votes; while browsing ACTIVE the sub-filter is
+    // hidden, so a stale selection must not apply (it would guarantee an empty table).
     const matchAlign =
+      statusFilter === 'ACTIVE' ||
       alignFilter === 'ALL' ||
       (v.status === 'SETTLED' && v.aligned === (alignFilter === 'ALIGNED'));
     const matchSearch = !search || v.statement.toLowerCase().includes(search.toLowerCase());

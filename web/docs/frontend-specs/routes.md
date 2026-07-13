@@ -34,7 +34,7 @@ App Router routes under `web/app/`. Assertion and dashboard pages read the clien
 | `/u/[address]/assertions`        | `.../assertions/page.tsx`                    | Client | User's assertions table w/ filter pills + search                                                                                 | mock                                                  | ✅ functional (mock)                                             |
 | `/u/[address]/disputes`          | `.../disputes/page.tsx`                      | Client | Derived dispute rows (WON/LOST/LLM/VOTING) + P&L                                                                                 | mock via `deriveDisputes`                             | ✅ functional (mock)                                             |
 | `/u/[address]/votes`             | `.../votes/page.tsx`                         | Client | Votes cast by the address (ACTIVE/SETTLED + ALIGNED/MISALIGNED sub-filter), each voter's real stake + reward                     | client store via `votesByAddress` (per-voter records) | ✅ functional (mock)                                             |
-| `/u/[address]/earnings`          | `.../earnings/page.tsx`                      | Client | DISPUTE_WIN / BOND_RETURN rows (role-scoped to the address)                                                                      | client store via `deriveEarnings`                     | ✅ functional (mock)                                             |
+| `/u/[address]/earnings`          | `.../earnings/page.tsx`                      | Client | DISPUTE_WIN / BOND_RETURN / VOTE_REWARD rows (role-scoped; bond return only when the outcome isn't False)                        | client store via `deriveEarnings` + `votesByAddress`  | ✅ functional (mock)                                             |
 
 Dynamic segments: **`[id]`** (assertion PDA id, via `useParams`) and **`[address]`**
 (user pubkey, via `useParams`).
@@ -94,17 +94,18 @@ it runs the store transition and routes back to the detail page.
   window. The primary button advances to the Claim Summary from any earlier section and
   only submits from there (a deliberate review step); the expiry preview is a live clock.
 - `handleSubmit` builds a real `AssertionAccount` (mock base58 id, toy `mockHash` aux
-  hash, liveness deadline from the chosen window, asserter = Privy address), adds it
+  hash, liveness deadline from the fixed 7-day window, asserter = Privy address), adds it
   to the client store, and navigates to its detail page. No on-chain
   `create_assertion` tx yet — this is the seam for real integration. Created
   assertions live only in memory; a hard refresh of their URL 404s.
 
 ## User dashboard pattern
 
-Every `/u/[address]/*` page is a Client Component that reads `address` from `useParams`,
-calls `filterAssertionsByAddress(address, useAssertions())` against the client store, and
-derives its view client-side (`computeAssertionStats`, `deriveDisputes`, `deriveVotes`,
-`deriveEarnings`). Because the filter returns assertions where the wallet is the asserter
-**or** a disputer, each derivation re-checks the role so cross-role rows (e.g. an
-asserter's returned bond vs a disputer's winnings) aren't mis-attributed. Rows deep-link
-to `/assertion/browse/{id}`.
+Every `/u/[address]/*` page is a Client Component that reads `address` from `useParams`
+and derives its view client-side from the store. Assertions/disputes/earnings scope via
+`filterAssertionsByAddress(address, useAssertions())` (`deriveDisputes`,
+`deriveEarnings`); because that filter returns assertions where the wallet is the
+asserter **or** a disputer, each derivation re-checks the role so cross-role rows (e.g.
+an asserter's returned bond vs a disputer's winnings) aren't mis-attributed. The votes
+tab instead reads the wallet's own `VoteRecord`s via `votesByAddress`. Rows deep-link to
+`/assertion/browse/{id}`.

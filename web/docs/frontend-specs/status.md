@@ -28,7 +28,7 @@ lands.
   ineligible states/expired windows. Detail-page actions link here instead of inline
   forms.
 - **Create flow** — the make form now actually creates an `AssertionAccount` in the
-  store (mock id, toy aux hash, liveness from the chosen window) and navigates to it.
+  store (mock id, toy aux hash, liveness from the fixed 7-day window) and navigates to it.
 
 - **Landing page** (`/`) — full marketing site: hero (dithered wave bg), 3-layer process
   section with custom SVG art, resolution-layers, consumers, footer.

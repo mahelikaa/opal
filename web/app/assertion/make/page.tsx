@@ -112,12 +112,16 @@ export default function MakeAssertion() {
   const statementValid = trimmedStatement.length >= 10 && !trimmedStatement.endsWith('?');
   const walletConnected = ready && authenticated && currentAddress;
   const canSubmit = statementValid && walletConnected;
-  const buttonDisabled = Boolean(walletConnected) && !statementValid;
+  // Guards double-submit: router.push doesn't unmount the page before a second click
+  // lands, and each submit would mint a fresh id — so latch after the first.
+  const [submitting, setSubmitting] = useState(false);
+  const buttonDisabled = (Boolean(walletConnected) && !statementValid) || submitting;
 
   // Mock create — mirrors `create_assertion`, persisted in the client-side store
   // until the on-chain transaction is wired.
   const handleSubmit = () => {
-    if (!canSubmit || !currentAddress) return;
+    if (!canSubmit || !currentAddress || submitting) return;
+    setSubmitting(true);
 
     const id = generateMockId();
     const submittedAt = Date.now();

@@ -287,6 +287,9 @@ export default function DisputesPage() {
                               <span className="text-muted-foreground/30">—</span>
                             ) : row.pnl.startsWith('+') ? (
                               <span className="text-primary">{row.pnl}</span>
+                            ) : row.pnl.startsWith('±') ? (
+                              // No-fault: neither gain nor loss — match the zinc badge.
+                              <span className="text-zinc-400">{row.pnl}</span>
                             ) : (
                               <span className="text-red-400">{row.pnl}</span>
                             )}

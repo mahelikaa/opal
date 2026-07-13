@@ -75,8 +75,14 @@ function deriveEarnings(
       });
     }
 
-    // The asserter's bond is returned once their own assertion resolves.
-    if (assertion.asserter === address && assertion.state === 'Resolved') {
+    // The asserter's bond is returned once their own assertion resolves — unless it
+    // resolved False, in which case the bond was slashed and paid to the winning
+    // disputer (Unresolvable settles no-fault, so the bond still comes back).
+    if (
+      assertion.asserter === address &&
+      assertion.state === 'Resolved' &&
+      assertion.outcome !== 'False'
+    ) {
       const returnedAt = assertion.finalizedAt || assertion.createdAt;
       earnings.push({
         id: `${assertion.id}-bond-return`,

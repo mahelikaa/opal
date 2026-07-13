@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation';
 
 import Rise from '@/components/common/rise';
 import { Button } from '@/components/ui/button';
-import { DEMO_USER, filterAssertionsByAddress } from '@/data/assertion';
+import { DEMO_USER, filterAssertionsByAddress, votesByAddress } from '@/data/assertion';
 import { getOutcomeLabel, getStageLabel } from '@/lib/assertion-labels';
 import { computeAssertionStats, topControversialAssertion } from '@/lib/assertion-stats';
 import { useAssertions } from '@/lib/assertion-store';
@@ -56,8 +56,11 @@ export default function Activity() {
   const assertions = filterAssertionsByAddress(address, allAssertions);
   const stats = computeAssertionStats(assertions);
   const top = topControversialAssertion(assertions);
+  // Votes live on per-voter records, not the asserter/disputer filter — an address that
+  // has only voted still has activity, so it must not see the empty state.
+  const voteCount = votesByAddress(address, allAssertions).length;
 
-  if (assertions.length === 0) {
+  if (assertions.length === 0 && voteCount === 0) {
     return (
       <div className="flex min-h-[calc(100vh-16rem)] flex-col items-center justify-center gap-5 px-4 text-center">
         <h1 className="text-2xl uppercase md:text-3xl">No Activity Yet</h1>
