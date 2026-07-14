@@ -1,3 +1,4 @@
+import { getOutcomeLabel } from '@/lib/assertion-labels';
 import { cn } from '@/lib/utils';
 import type { AssertionAccount } from '@/types';
 
@@ -32,7 +33,7 @@ export default function Timeline({ statement }: { statement: AssertionAccount | 
           {
             date: statement.llmResolutionRound.resolvedAt,
             title: 'LLM RESOLUTION',
-            description: `Proposed ${statement.llmResolutionRound.outcome}`,
+            description: `Proposed ${getOutcomeLabel(statement.llmResolutionRound.outcome ?? null)}`,
             active: true,
           },
         ]

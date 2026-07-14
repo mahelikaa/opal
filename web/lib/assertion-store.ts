@@ -131,7 +131,7 @@ export function fileLlmDispute(id: string, disputer: string) {
   }));
 }
 
-// Mirrors `submit_llm_resolution` — the trusted LLM resolver posts its verdict.
+// Mirrors `submit_mock_llm_resolution` — the trusted LLM resolver posts its verdict.
 // Mock: the chosen outcome stands in for the resolver's verdict.
 export function submitLlmResolution(id: string, outcome: ResolutionOutcome) {
   const now = new Date();
@@ -211,6 +211,12 @@ export function castVote(id: string, outcome: ResolutionOutcome, weight: number,
   updateAssertion(id, (prev) => {
     if (!prev.voteResolutionRound) return prev;
     const aggregateVotes = { ...prev.voteResolutionRound.aggregateVotes };
+    // A wallet votes once per round: back out this voter's prior vote (if any) before
+    // counting the new one, so a re-vote replaces rather than double-counts.
+    const prior = (prev.voteResolutionRound.voters ?? []).find((v) => v.voter === voter);
+    if (prior) {
+      aggregateVotes[prior.outcome] -= prior.weight;
+    }
     aggregateVotes[outcome] += weight;
     // Record the individual vote so it surfaces on the voter's dashboard. A wallet votes
     // once per round, so replace any prior record from the same voter.
@@ -225,7 +231,8 @@ export function castVote(id: string, outcome: ResolutionOutcome, weight: number,
         ...prev.voteResolutionRound,
         aggregateVotes,
         voters,
-        totalValidWeight: prev.voteResolutionRound.totalValidWeight + BigInt(weight),
+        totalValidWeight:
+          prev.voteResolutionRound.totalValidWeight + BigInt(weight) - BigInt(prior?.weight ?? 0),
         finalOutcome: tallyOutcome(aggregateVotes),
       },
     };

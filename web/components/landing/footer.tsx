@@ -89,14 +89,14 @@ export default function Footer() {
 
         <div className="border-border/70 flex flex-col items-start justify-between gap-3 border-t px-6 py-6 font-mono text-[11px] tracking-widest uppercase sm:flex-row sm:items-center md:px-16">
           <span className="text-muted-foreground/70">Built for verifiable outcomes</span>
-
           <div className="flex items-center gap-8">
             <span className="text-muted-foreground flex items-center gap-2 tracking-wider">
               <span className="bg-primary size-1.5 animate-pulse" />
               Solana Devnet
             </span>
-
-            <span className="text-muted-foreground/70 tabular-nums">2026</span>
+            <span className="text-muted-foreground/70 tabular-nums">
+              {new Date().getFullYear()}
+            </span>
           </div>
         </div>
 

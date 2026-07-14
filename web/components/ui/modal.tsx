@@ -32,6 +32,14 @@ export default function Modal({
   const panelRef = useRef<HTMLDivElement | null>(null);
   const lastFocusedRef = useRef<HTMLElement | null>(null);
 
+  // Keep the latest onClose in a ref so the effect below can depend on `open` alone —
+  // otherwise an inline onClose prop re-runs the effect on every parent render, which
+  // restores scroll and steals focus out of the open dialog.
+  const onCloseRef = useRef(onClose);
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
+
   useEffect(() => {
     if (!open) return;
 
@@ -49,7 +57,7 @@ export default function Modal({
 
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        onClose();
+        onCloseRef.current();
         return;
       }
       if (e.key !== 'Tab' || !panel) return;
@@ -86,7 +94,7 @@ export default function Modal({
       document.body.style.overflow = prevOverflow;
       lastFocusedRef.current?.focus?.();
     };
-  }, [open, onClose]);
+  }, [open]);
 
   return (
     <AnimatePresence>

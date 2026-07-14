@@ -12,7 +12,8 @@ import {
   XCircleIcon,
 } from '@phosphor-icons/react';
 import type { Icon } from '@phosphor-icons/react';
-import { motion as m } from 'motion/react';
+import { MotionConfig, motion as m } from 'motion/react';
+import type { Variants } from 'motion/react';
 
 import { Button } from '@/components/ui/button';
 import { getOutcomeLabel } from '@/lib/assertion-labels';
@@ -36,6 +37,22 @@ const OUTCOME_OPTIONS: {
       'It cannot be decided under its Resolution Spec: ambiguous, conflicting, or premature.',
   },
 ];
+
+// Entrance choreography: parents stagger their children, children rise out of a blur.
+const stagger: Variants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.07, delayChildren: 0.05 } },
+};
+
+const rise: Variants = {
+  hidden: { opacity: 0, y: 14, filter: 'blur(8px)' },
+  show: {
+    opacity: 1,
+    y: 0,
+    filter: 'blur(0px)',
+    transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] },
+  },
+};
 
 export default function VoteScreen() {
   const { id } = useParams();
@@ -61,6 +78,7 @@ export default function VoteScreen() {
   }, []);
 
   const round = assertion.voteResolutionRound;
+  const resolved = assertion.state === 'Resolved';
   const votingClosed = isDeadlinePast(round?.votingDeadline);
   const votingLive =
     assertion.state === 'Voting' && Boolean(round?.votingDeadline) && !votingClosed;
@@ -73,6 +91,7 @@ export default function VoteScreen() {
         statement={assertion.statement}
         userVote={userVote}
         round={round}
+        resolved={resolved}
         votingClosed={votingClosed}
         backHref={backHref}
       />
@@ -83,13 +102,15 @@ export default function VoteScreen() {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-4 px-4">
         <h1 className="text-xl uppercase md:text-2xl">
-          {votingClosed ? 'Voting Closed' : 'Voting Not Open'}
+          {resolved ? 'Assertion Resolved' : votingClosed ? 'Voting Closed' : 'Voting Not Open'}
         </h1>
 
         <p className="text-muted-foreground text-sm leading-relaxed">
-          {votingClosed
-            ? 'The voting window has ended. The round can now be finalized.'
-            : 'Votes can only be cast while the assertion is in its voting window.'}
+          {resolved
+            ? 'Voting has ended and this round has already been finalized.'
+            : votingClosed
+              ? 'The voting window has ended. The round can now be finalized.'
+              : 'Votes can only be cast while the assertion is in its voting window.'}
         </p>
 
         <Button variant="outline" nativeButton={false} render={<Link href={backHref} />}>
@@ -115,143 +136,163 @@ export default function VoteScreen() {
       : `Confirm Vote: ${getOutcomeLabel(selected)} · ${MOCK_VOTE_WEIGHT.toLocaleString()} USDC`;
 
   return (
-    <div className="flex min-h-screen flex-col px-4 pt-24 pb-8">
-      <m.div
-        initial={{ opacity: 0, y: 14, filter: 'blur(8px)' }}
-        animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-        className="mx-auto flex w-full max-w-4xl flex-1 flex-col"
-      >
-        <div className="flex items-center justify-between">
-          <Link
-            href={backHref}
-            className="text-muted-foreground hover:text-foreground flex items-center gap-2 font-mono text-xs tracking-widest uppercase transition-colors"
-          >
-            <ArrowLeftIcon size={14} />
-            Back to Assertion
-          </Link>
+    <MotionConfig reducedMotion="user">
+      <div className="flex min-h-screen flex-col px-6 pt-24 pb-8 md:px-10">
+        <m.div
+          variants={stagger}
+          initial="hidden"
+          animate="show"
+          className="flex w-full flex-1 flex-col"
+        >
+          <m.div variants={rise} className="flex items-center justify-between">
+            <Link
+              href={backHref}
+              className="text-muted-foreground hover:text-foreground flex items-center gap-2 font-mono text-xs tracking-widest uppercase transition-colors"
+            >
+              <ArrowLeftIcon size={14} />
+              Back to Assertion
+            </Link>
 
-          <div className="flex flex-col items-end gap-0.5">
-            <span className="text-muted-foreground font-mono text-[10px] tracking-[0.2em] uppercase">
-              Voting Closes In
-            </span>
-
-            <span className="text-primary font-mono text-sm uppercase tabular-nums">
-              {getTimeRemaining(round.votingDeadline ?? undefined)}
-            </span>
-          </div>
-        </div>
-
-        <div className="flex flex-1 flex-col justify-center gap-10 py-12">
-          <div className="flex flex-col gap-4">
-            <span className="text-primary font-mono text-xs tracking-[0.25em] uppercase">
-              Cast Your Vote
-            </span>
-
-            <h1 className="max-w-3xl text-xl leading-snug text-balance uppercase md:text-2xl">
-              {assertion.statement}
-            </h1>
-
-            <div className="text-muted-foreground flex flex-wrap gap-x-8 gap-y-2 font-mono text-xs tracking-wider uppercase">
-              <span>
-                LLM Proposed{' '}
-                <span className="text-foreground">
-                  {getOutcomeLabel(assertion.llmResolutionRound?.outcome ?? null)}
-                </span>
+            <div className="flex flex-col items-end gap-0.5">
+              <span className="text-muted-foreground font-mono text-[10px] tracking-[0.2em] uppercase">
+                Voting Closes In
               </span>
 
-              <span>
-                Your Stake{' '}
-                <span className="text-foreground tabular-nums">
-                  {MOCK_VOTE_WEIGHT.toLocaleString()} USDC
-                </span>
-              </span>
-
-              <span>
-                Total Locked{' '}
-                <span className="text-foreground tabular-nums">
-                  {Number(round.totalValidWeight).toLocaleString()} USDC
-                </span>
+              <span className="text-primary font-mono text-sm uppercase tabular-nums">
+                {getTimeRemaining(round.votingDeadline ?? undefined)}
               </span>
             </div>
-          </div>
+          </m.div>
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            {OUTCOME_OPTIONS.map(({ outcome, icon: OutcomeIcon, description }) => {
-              const isSelected = selected === outcome;
+          <div className="flex flex-1 flex-col items-center justify-center gap-10 py-10">
+            <m.div variants={rise} className="flex flex-col items-center gap-4 text-center">
+              <span className="text-primary font-mono text-xs tracking-[0.25em] uppercase">
+                Cast Your Vote
+              </span>
 
-              return (
-                <button
-                  key={outcome}
-                  onClick={() => setSelected(outcome)}
-                  aria-pressed={isSelected}
-                  className={cn(
-                    'group border-border relative flex min-h-40 flex-col items-start justify-between gap-4 border p-6 text-left transition-colors md:p-8',
-                    !isSelected && 'hover:border-primary/60 hover:bg-primary/5'
-                  )}
-                >
-                  {isSelected && (
-                    <m.span
-                      layoutId="vote-selection"
-                      transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-                      className="border-primary bg-primary/10 absolute -inset-px border"
-                    />
-                  )}
+              <h1 className="max-w-3xl text-xl leading-snug text-balance uppercase md:text-2xl">
+                {assertion.statement}
+              </h1>
 
-                  <OutcomeIcon
-                    size={32}
-                    weight={isSelected ? 'fill' : 'regular'}
+              <div className="text-muted-foreground flex flex-wrap justify-center gap-x-8 gap-y-2 font-mono text-xs tracking-wider uppercase">
+                <span>
+                  LLM Proposed{' '}
+                  <span className="text-foreground">
+                    {getOutcomeLabel(assertion.llmResolutionRound?.outcome ?? null)}
+                  </span>
+                </span>
+
+                <span>
+                  Your Stake{' '}
+                  <span className="text-foreground tabular-nums">
+                    {MOCK_VOTE_WEIGHT.toLocaleString()} USDC
+                  </span>
+                </span>
+
+                <span>
+                  Total Locked{' '}
+                  <span className="text-foreground tabular-nums">
+                    {Number(round.totalValidWeight).toLocaleString()} USDC
+                  </span>
+                </span>
+              </div>
+            </m.div>
+
+            <m.div
+              variants={stagger}
+              className="grid w-full max-w-5xl grid-cols-1 gap-4 md:grid-cols-3"
+            >
+              {OUTCOME_OPTIONS.map(({ outcome, icon: OutcomeIcon, description }) => {
+                const isSelected = selected === outcome;
+
+                return (
+                  <m.button
+                    key={outcome}
+                    variants={rise}
+                    whileHover={{ y: -4 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => setSelected(outcome)}
+                    aria-pressed={isSelected}
                     className={cn(
-                      'relative z-10 transition-colors',
-                      isSelected ? 'text-primary' : 'text-muted-foreground group-hover:text-primary'
+                      'group border-border bg-card/40 relative flex min-h-52 flex-col items-center justify-center gap-5 border p-6 text-center transition-colors md:p-8',
+                      !isSelected && 'hover:border-primary/60 hover:bg-primary/5'
                     )}
-                  />
+                  >
+                    {isSelected && (
+                      <m.span
+                        layoutId="vote-selection"
+                        transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                        className="border-primary bg-primary/10 absolute -inset-px border"
+                      />
+                    )}
 
-                  <div className="relative z-10 flex flex-col gap-1">
-                    <span
-                      className={cn(
-                        'font-mono text-lg tracking-[0.15em] uppercase md:text-xl',
-                        isSelected && 'text-primary'
-                      )}
+                    <m.span
+                      animate={isSelected ? { scale: [1, 1.15, 1] } : { scale: 1 }}
+                      transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                      className="relative z-10"
                     >
-                      {getOutcomeLabel(outcome)}
-                    </span>
+                      <OutcomeIcon
+                        size={36}
+                        weight={isSelected ? 'fill' : 'regular'}
+                        className={cn(
+                          'transition-colors',
+                          isSelected
+                            ? 'text-primary'
+                            : 'text-muted-foreground group-hover:text-primary'
+                        )}
+                      />
+                    </m.span>
 
-                    <span className="text-muted-foreground text-xs leading-relaxed">
-                      {description}
-                    </span>
-                  </div>
-                </button>
-              );
-            })}
+                    <div className="relative z-10 flex flex-col items-center gap-1.5">
+                      <span
+                        className={cn(
+                          'font-mono text-lg tracking-[0.15em] uppercase md:text-xl',
+                          isSelected && 'text-primary'
+                        )}
+                      >
+                        {getOutcomeLabel(outcome)}
+                      </span>
+
+                      <span className="text-muted-foreground max-w-60 text-xs leading-relaxed">
+                        {description}
+                      </span>
+                    </div>
+                  </m.button>
+                );
+              })}
+            </m.div>
+
+            <m.p
+              variants={rise}
+              className="text-muted-foreground/60 max-w-3xl text-center text-xs leading-relaxed"
+            >
+              Mock stake: {MOCK_VOTE_WEIGHT.toLocaleString()} USDC. Weight is linear (1 staked USDC
+              = 1 vote) and an outcome needs a supermajority or the vote settles Unresolvable. Real
+              sealed MagicBlock voting is not wired yet — this only updates local state, and the
+              live tally shown here would be hidden in the real protocol.
+            </m.p>
           </div>
 
-          <p className="text-muted-foreground/60 text-xs leading-relaxed">
-            Mock stake: {MOCK_VOTE_WEIGHT.toLocaleString()} USDC. Weight is linear (1 staked USDC =
-            1 vote) and an outcome needs a supermajority or the vote settles Unresolvable. Real
-            sealed MagicBlock voting is not wired yet — this only updates local state, and the live
-            tally shown here would be hidden in the real protocol.
-          </p>
-        </div>
-
-        <div className="border-border border-t pt-4">
-          <m.button
-            whileHover={selected ? { scale: 1.005 } : {}}
-            whileTap={selected ? { scale: 0.995 } : {}}
-            disabled={!selected}
-            onClick={handleConfirm}
-            className={cn(
-              'w-full py-4 font-mono text-xs tracking-widest uppercase transition-colors',
-              selected
-                ? 'bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer'
-                : 'border-border bg-muted/40 text-muted-foreground cursor-not-allowed border'
-            )}
-          >
-            {confirmLabel}
-          </m.button>
-        </div>
-      </m.div>
-    </div>
+          <m.div variants={rise} className="flex flex-col gap-4">
+            <div className="via-border h-px w-full bg-gradient-to-r from-transparent to-transparent" />
+            <m.button
+              whileHover={selected ? { scale: 1.005 } : {}}
+              whileTap={selected ? { scale: 0.995 } : {}}
+              disabled={!selected}
+              onClick={handleConfirm}
+              className={cn(
+                'w-full py-4 font-mono text-xs tracking-widest uppercase transition-colors',
+                selected
+                  ? 'bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer'
+                  : 'border-border bg-muted/40 text-muted-foreground cursor-not-allowed border'
+              )}
+            >
+              {confirmLabel}
+            </m.button>
+          </m.div>
+        </m.div>
+      </div>
+    </MotionConfig>
   );
 }
 
@@ -259,12 +300,14 @@ function VoteRecorded({
   statement,
   userVote,
   round,
+  resolved,
   votingClosed,
   backHref,
 }: {
   statement: string;
   userVote: ResolutionOutcome;
   round: VoteResolutionRound;
+  resolved: boolean;
   votingClosed: boolean;
   backHref: string;
 }) {
@@ -292,9 +335,11 @@ function VoteRecorded({
           <p className="text-muted-foreground max-w-lg text-sm leading-relaxed">{statement}</p>
 
           <p className="text-muted-foreground text-xs leading-relaxed">
-            {votingClosed
-              ? 'Voting has closed — the round can now be finalized.'
-              : `Voting closes in ${getTimeRemaining(round.votingDeadline ?? undefined)}.`}
+            {resolved
+              ? 'Voting has ended and this round has been finalized.'
+              : votingClosed
+                ? 'Voting has closed — the round can now be finalized.'
+                : `Voting closes in ${getTimeRemaining(round.votingDeadline ?? undefined)}.`}
           </p>
         </div>
 
