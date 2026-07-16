@@ -396,7 +396,7 @@ describe('opal', () => {
       )
     ).address;
 
-    expect(
+    await expect(
       program.methods
         .initializeProtocolConfig({
           resolver: authority.publicKey,
@@ -443,7 +443,7 @@ describe('opal', () => {
       )
     ).address;
 
-    expect(
+    await expect(
       program.methods
         .initializeProtocolConfig({
           resolver: PublicKey.default,
@@ -582,12 +582,12 @@ describe('opal', () => {
     const a = ctx.newAssertion();
     await ctx.createAssertion(a, 'Test', 200);
 
-    expect(ctx.finalizeUndisputed(a)).rejects.toThrow();
+    await expect(ctx.finalizeUndisputed(a)).rejects.toThrow();
   });
 
   it('error: insufficient bond', async () => {
     const a = ctx.newAssertion();
-    expect(ctx.createAssertion(a, 'Fail', 50)).rejects.toThrow();
+    await expect(ctx.createAssertion(a, 'Fail', 50)).rejects.toThrow();
   });
 
   it('error: disputing after liveness deadline', async () => {
@@ -595,14 +595,14 @@ describe('opal', () => {
     await ctx.createAssertion(a, 'Late dispute', 200);
     await sleep(4000);
 
-    expect(ctx.disputeAssertion(a)).rejects.toThrow();
+    await expect(ctx.disputeAssertion(a)).rejects.toThrow();
   });
 
   it('error: submitLlmResolution when state is Asserted', async () => {
     const a = ctx.newAssertion();
     await ctx.createAssertion(a, 'No dispute', 200);
 
-    expect(ctx.submitLlmResolution(a, 0)).rejects.toThrow();
+    await expect(ctx.submitLlmResolution(a, 0)).rejects.toThrow();
   });
 
   it('error: submitLlmResolution from a non-resolver signer', async () => {
@@ -610,7 +610,7 @@ describe('opal', () => {
     await ctx.createAssertion(a, 'Wrong signer', 200);
     await ctx.disputeAssertion(a);
 
-    expect(ctx.submitLlmResolution(a, 0, proto.authority)).rejects.toThrow();
+    await expect(ctx.submitLlmResolution(a, 0, proto.authority)).rejects.toThrow();
   });
 
   it('error: submitLlmResolution with TooEarly outcome', async () => {
@@ -618,7 +618,7 @@ describe('opal', () => {
     await ctx.createAssertion(a, 'Too early', 200);
     await ctx.disputeAssertion(a);
 
-    expect(ctx.submitLlmResolution(a, OUTCOME.TOO_EARLY)).rejects.toThrow();
+    await expect(ctx.submitLlmResolution(a, OUTCOME.TOO_EARLY)).rejects.toThrow();
   });
 
   it('error: submitLlmResolution twice on the same round', async () => {
@@ -627,7 +627,7 @@ describe('opal', () => {
     await ctx.disputeAssertion(a);
     await ctx.submitLlmResolution(a, OUTCOME.TRUE);
 
-    expect(ctx.submitLlmResolution(a, OUTCOME.FALSE)).rejects.toThrow();
+    await expect(ctx.submitLlmResolution(a, OUTCOME.FALSE)).rejects.toThrow();
   });
 
   it('accepts an Unresolvable verdict from the resolver', async () => {
@@ -650,7 +650,7 @@ describe('opal', () => {
     await ctx.submitLlmResolution(a, 0);
     await sleep(4000);
 
-    expect(ctx.challengeLlmResolution(a)).rejects.toThrow();
+    await expect(ctx.challengeLlmResolution(a)).rejects.toThrow();
   });
 
   it('error: disputing an already-disputed assertion', async () => {
@@ -658,7 +658,7 @@ describe('opal', () => {
     await ctx.createAssertion(a, 'Double dispute', 200);
     await ctx.disputeAssertion(a);
 
-    expect(ctx.disputeAssertion(a)).rejects.toThrow();
+    await expect(ctx.disputeAssertion(a)).rejects.toThrow();
   });
 
   it('error: mismatched llmDispute account', async () => {
@@ -674,7 +674,7 @@ describe('opal', () => {
 
     // finalizeLlmResolution with assertion1 but llmDispute from assertion2
     // should fail because the dispute doesn't link back to assertion1
-    expect(
+    await expect(
       program.methods
         .finalizeLlmResolution({ assertionId: a1.id })
         .accounts({
